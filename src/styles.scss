@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+// body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.title {
+    font-weight: bold !important;
+    font-size: 30px !important;
+    color: rgb(255, 77, 13);
+    margin: 0 !important;
+    padding: 0  !important;
+}
+
+.titleItem {
+    font-weight: bold !important;
+    font-size: 20px !important;
+    color: rgb(255, 77, 13);
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+  
+.subtitleItem {
+    font-weight: bold !important;
+    font-size: 15px !important;
+    color: rgb(255, 77, 13);
+    margin: 0 !important;
+    padding: 0 !important;
+}

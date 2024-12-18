@@ -1,0 +1,120 @@
+<section
+  class="p-[10px] fixed top-0 left-0 h-screen bg-blue-950 overflow-y-auto overflow-x-visible"
+  style="z-index: 20"
+  [ngClass]="{
+    'w-[280px]': !closeSidenav,
+    'w-[60px]': closeSidenav
+  }"
+>
+  <div
+    class="flex"
+    [ngClass]="{
+      'justify-between': !closeSidenav,
+      'justify-center': closeSidenav
+    }"
+  >
+    @if(!closeSidenav){
+    <h1 class="text-white font-black text-3xl mb-[5px]">Menu</h1>
+    }
+    <button mat-mini-fab color="light" (click)="closeSidenav = !closeSidenav">
+      <mat-icon> {{ closeSidenav ? "menu" : "arrow_back" }} </mat-icon>
+    </button>
+  </div>
+
+  <section
+    [ngClass]="{
+      hidden: closeSidenav,
+    }"
+  >
+    <section>
+      <h2 class="mt-[5px] text-gray-100 font-black text-xl mb-[5px]">Zoom</h2>
+      <button
+        (click)="zoom.set(zoom() + 0.1)"
+        mat-mini-fab
+        class="m-[2px]"
+        color="light"
+      >
+        <mat-icon> zoom_in </mat-icon>
+      </button>
+      <button
+        mat-mini-fab
+        class="m-[2px]"
+        color="light"
+        (click)="zoom.set(zoom() - 0.1)"
+      >
+        <mat-icon> zoom_out </mat-icon>
+      </button>
+      <button mat-mini-fab class="m-[2px]" color="light" (click)="refresh()">
+        <mat-icon> refresh </mat-icon>
+      </button>
+    </section>
+    <section>
+      <ng-content></ng-content>
+    </section>
+  </section>
+</section>
+
+<section class="h-screen w-screen overflow-hidden bg-black">
+  <div
+    class="relative left-0 right-0 mx-auto seatSection select-none cursor-move"
+    [ngClass]="{
+      'h-full w-fit': hScreen >= wScreen,
+      'h-fit w-full': hScreen < wScreen,
+    }"
+    (mousedown)="pressClick($event)"
+    (mouseup)="releaseClick($event)"
+    (mousemove)="mouseMove($event)"
+    (mouseleave)="releaseClick($event)"
+    (touchstart)="pressTouch($event)"
+    (touchmove)="touchMove($event)"
+    (touchend)="touchEnd($event)"
+    (touchcancel)="touchEnd($event)"
+    #container
+    [ngStyle]="{
+      transform:
+        'scale(' +
+        zoom() +
+        ') ' +
+        'translate(' +
+        translatePos.x +
+        'px,' +
+        translatePos.y +
+        'px)'
+    }"
+  >
+    <img
+      [src]="config?.img"
+      class="max-w-none pointer-events-none"
+      [ngClass]="{
+        'h-full w-auto': hScreen >= wScreen,
+        'h-auto w-full': hScreen < wScreen
+      }"
+    />
+
+    @for (seat of seats; track $index) {
+    <mat-icon
+      (click)="sendSeat(seat)"
+      (touchstart)="sendSeat(seat)"
+      [matTooltip]="showToolTipText(seat)"
+      [matTooltipPosition]="'right'"
+      class="inline-block absolute translate-x-[-50%] translate-y-[-50%] text-white"
+      [ngClass]="{
+        'cursor-pointer': !blockSeat(seat),
+        'cursor-not-allowed': blockSeat(seat)
+      }"
+      #tooltip="matTooltip"
+      [ngStyle]="{
+        left: seat.position.x + '%',
+        top: seat.position.y + '%',
+        width: sizePixelSize + 'px',
+        height: sizePixelSize + 'px',
+        'font-size': sizePixelSize + 'px',
+        'background-color': seat.clase.description,
+        opacity: getOpacity(seat)
+      }"
+    >
+      {{ getIcon(seat) }}
+    </mat-icon>
+    }
+  </div>
+</section>

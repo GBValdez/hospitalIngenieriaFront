@@ -1,0 +1,12 @@
+.bodyNormal {
+  width: calc(100% - 60px);
+}
+
+@media (min-width: 600px) {
+  .bodyNormal {
+    transition: 200ms ease-in;
+  }
+  .nobodyCollapse {
+    width: calc(100% - 300px);
+  }
+}

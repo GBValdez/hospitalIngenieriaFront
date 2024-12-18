@@ -1,0 +1,20 @@
+<app-side-menu
+  [buttons]="buttons"
+  (collapseEvent)="isCollapsed = $event"
+></app-side-menu>
+<section class="flex justify-end">
+  <section
+    class="bodyNormal min-h-screen bg-gray-900 flex justify-center pt-[30px] bg-cover bg-center"
+    [ngClass]="{ nobodyCollapse: !isCollapsed }"
+    style="
+      background-image: url(fondoHome.webp);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-color: #e0d3b0;
+    "
+  >
+    <div class="w-[80%]">
+      <router-outlet></router-outlet>
+    </div>
+  </section>
+</section>

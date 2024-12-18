@@ -1,0 +1,43 @@
+<ul class="listOptions">
+  @for (button of buttons; track $index) { @if(hideButton(button)){
+  <li>
+    <div
+      class="item"
+      [ngClass]="{ itemSelect: button.present }"
+      (click)="click(button, button.click)"
+      [title]="button.text"
+    >
+      <div class="iconItem" [ngClass]="{ 'iconItem-collapse': collapse }">
+        <mat-icon>{{ button.icon }}</mat-icon>
+      </div>
+
+      @if (showElements) {
+      <div class="descItem">
+        <div>{{ button.text }}</div>
+      </div>
+      } @if (button.child && showElements) {
+      <div class="child">
+        <mat-icon>{{
+          button.openChild ? "keyboard_arrow_down" : "keyboard_arrow_right"
+        }}</mat-icon>
+      </div>
+      }
+    </div>
+    <div
+      [hidden]="!button.openChild || !showElements"
+      [ngStyle]="{
+        'padding-left': getPaddingLeft()
+      }"
+    >
+      <app-sub-level
+        [level]="level + 1"
+        [collapseObs]="collapseObs"
+        [showElementsObs]="showElementsObs"
+        [buttons]="getChild(button)"
+      >
+      </app-sub-level>
+      <hr />
+    </div>
+  </li>
+  } }
+</ul>

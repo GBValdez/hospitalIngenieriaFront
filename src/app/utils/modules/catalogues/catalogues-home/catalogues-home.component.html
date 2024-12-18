@@ -1,0 +1,108 @@
+<section class="flex justify-between flex-wrap">
+  <h2 class="title text-orange-600">{{ title }}</h2>
+  <button class="sm:mb-0 mb-[10px]" mat-raised-button (click)="openForm()">
+    Crear {{ title.toLowerCase() }}
+  </button>
+</section>
+
+<mat-card class="w-full">
+  <mat-card-content>
+    <form
+      (ngSubmit)="searchCatalogue()"
+      class="flex sm:justify-between justify-center flex-wrap w-full"
+      [formGroup]="form"
+    >
+      <mat-form-field class="w-full">
+        <mat-label>Nombre</mat-label>
+        <input matInput Código="Nombre" formControlName="nameCont" />
+      </mat-form-field>
+
+      <div class="flex justify-end w-full flex-wrap">
+        <button
+          mat-raised-button
+          class="ml-[5px] mt-[5px]"
+          type="button"
+          (click)="cleanForm()"
+        >
+          Limpiar
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          class="ml-[5px] mt-[5px]"
+          type="submit"
+          [disabled]="form.invalid"
+        >
+          Buscar
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+@if(catalogues.length>0){
+<section class="flex flex-wrap">
+  @for (catalogue of catalogues; track $index) {
+  <mat-card
+    class="w-[250px] m-[5px] cursor-pointer pb-4 overflow-x-auto pl-4"
+    [matMenuTriggerFor]="menu"
+  >
+    <mat-card-header>
+      <mat-card-title
+        ><h3 class="titleItem">
+          {{ catalogue.name }}
+        </h3></mat-card-title
+      >
+      <mat-card-subtitle>
+        <p>{{ catalogue.description }}</p>
+        @if(dependency){
+        <h4 class="subtitleItem">{{ dependency.name }}</h4>
+        <p>{{ catalogue.catalogueParent?.name }}</p>
+        }
+      </mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+  <mat-menu #menu="matMenu" xPosition="after">
+    @if(typeCatalogue!="rol"){
+    <button mat-menu-item (click)="openForm(catalogue)">
+      <mat-icon>edit</mat-icon>
+      <span>Editar</span>
+    </button>
+    @if (subMenu) { @for (button of subMenu; track $index) {
+    <button mat-menu-item (click)="clickSubMenu(button, catalogue)">
+      <mat-icon>{{ button.icon }}</mat-icon>
+      <span>{{ button.text }}</span>
+    </button>
+
+    } }
+
+    <button mat-menu-item (click)="deleteCatalogue(catalogue)">
+      <mat-icon>delete</mat-icon>
+      <span>Borrar</span>
+    </button>
+
+    }@else{
+    <button [disabled]="true" mat-menu-item>
+      No puede editar ni borrar este rol
+    </button>
+    }
+  </mat-menu>
+  }
+</section>
+<footer>
+  <mat-paginator
+    [length]="this.catalogueSize"
+    [pageSize]="10"
+    [pageIndex]="pageNumber"
+    [pageSizeOptions]="[5, 10, 15, 20]"
+    class="rounded-xl"
+    (page)="changePagination($event)"
+  >
+  </mat-paginator>
+</footer>
+} @else{
+<img
+  class="sm:w-[40%] w-[90%] left-0 right-0 mx-auto rounded-3xl"
+  src="./assets/img/noFound.webp"
+  alt=""
+/>
+}

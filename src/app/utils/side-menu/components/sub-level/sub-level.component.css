@@ -1,0 +1,72 @@
+ul {
+  list-style: none;
+}
+mat-icon {
+  margin-left: 10px;
+  font-size: 30px;
+  height: 30px;
+  color: white;
+}
+.listOptions {
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  list-style: none;
+  color: rgb(255, 255, 255);
+  width: 100%;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  box-sizing: content-box;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 3px 0;
+  padding: 7px 0;
+}
+.itemSelect {
+  color: rgb(255, 255, 255);
+  background: #5c5c5c;
+}
+
+.iconItem {
+  width: 90px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  text-align: left;
+  white-space: normal;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.iconItem-collapse {
+  width: 100%;
+}
+
+.descItem {
+  width: 190px;
+  display: flex;
+  align-items: center;
+  word-break: break-word;
+  white-space: normal;
+  animation: fadeIn 0.5s ease-in-out;
+}
+.child {
+  width: 50px;
+  position: absolute;
+  right: 10px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.hiddenButton {
+  display: none;
+}

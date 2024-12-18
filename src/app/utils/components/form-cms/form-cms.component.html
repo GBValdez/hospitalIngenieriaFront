@@ -1,0 +1,49 @@
+@if(data()){
+<mat-dialog-content>
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <h2 class="title">
+          {{ dataItem ? "Editar" : "Crear" }}
+          {{ data().title }}
+        </h2>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <section>
+        <ng-content></ng-content>
+        <div class="flex justify-end w-full flex-wrap">
+          <button
+            mat-raised-button
+            class="ml-[5px] mt-[5px]"
+            type="button"
+            mat-dialog-close
+            color="warn"
+          >
+            Cancelar
+          </button>
+          <button
+            mat-raised-button
+            class="ml-[5px] mt-[5px]"
+            type="button"
+            (click)="cleanForm()"
+          >
+            Limpiar
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            class="ml-[5px] mt-[5px]"
+            type="submit"
+            (click)="onSubmit()"
+            [disabled]="data().form.invalid"
+          >
+            Guardar
+          </button>
+        </div>
+      </section>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+
+}

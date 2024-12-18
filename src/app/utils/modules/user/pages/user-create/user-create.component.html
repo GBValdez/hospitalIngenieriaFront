@@ -1,0 +1,115 @@
+<mat-dialog-content>
+  <form
+    [formGroup]="form"
+    (ngSubmit)="createUser()"
+    class="left-0 right-0 mx-auto w-[95%] mt-[10px]"
+  >
+    <h1 class="title">Crear usuario</h1>
+
+    <mat-form-field class="w-full mb-[5px] mt-4">
+      <mat-label>Nombre</mat-label>
+      <input matInput type="text" formControlName="name" [maxlength]="50" />
+      <mat-error> El campo es <strong>requerido</strong> </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="w-full mb-[5px] mt-4">
+      <mat-label>Fecha Nacimiento</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="birthdate" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      @if(form.get('birthdate')!.hasError('required')){
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+      } @if(form.get('birthdate')!.hasError('menorDeEdad')){
+      <mat-error>El usuario debe ser mayor de edad</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field class="w-full mb-[5px] mt-4">
+      <mat-label>Dirección</mat-label>
+      <input matInput type="text" formControlName="address" [maxlength]="100" />
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="w-full mb-[5px] mt-4">
+      <mat-label>Teléfono</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="tel"
+        [maxlength]="10"
+        appOnlyNumberInput
+      />
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="w-full mb-[5px] mt-4">
+      <mat-label>UserName</mat-label>
+      <input matInput type="text" formControlName="userName" />
+      @if ( form.get('userName')!.hasError('required') ){
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+      } @if ( form.get('userName')!.hasError('pattern') ){
+      <mat-error
+        >El nombre de usuario solo puede contener letras o dígitos</mat-error
+      >
+      }
+    </mat-form-field>
+    <mat-form-field class="w-full mb-[5px]">
+      <mat-label>Correo</mat-label>
+      <input matInput type="text" formControlName="email" />
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+    </mat-form-field>
+    <mat-form-field class="w-full mb-[5px]">
+      <mat-label>Contraseña</mat-label>
+      <input
+        matInput
+        type="password"
+        formControlName="password"
+        #passwordInput
+      />
+      <button
+        matSuffix
+        mat-icon-button
+        type="button"
+        (click)="
+          passwordInput.type =
+            passwordInput.type == 'text' ? 'password' : 'text'
+        "
+      >
+        <mat-icon>{{
+          passwordInput.type == "text" ? "visibility_off" : "visibility"
+        }}</mat-icon>
+      </button>
+      @if(form.get('password')!.hasError('required')){
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+      }
+    </mat-form-field>
+    @if(form.get('password')!.hasError('pattern')){
+    <p class="text-red-500">
+      La contraseña debe contener: 8 caracteres de longitud, una letra mayúscula
+      , una letra minúscula, al menos un numero, un carácter especial ({{
+        symbols
+      }}).
+    </p>
+    }
+    <section class="flex justify-end w-full flex-wrap">
+      <button
+        mat-raised-button
+        color="warn"
+        type="button"
+        class="ml-[3px] mb-[3px]"
+        mat-dialog-close
+      >
+        Cancelar
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="ml-[3px] mb-[3px]"
+        [disabled]="form.invalid"
+      >
+        Validar
+      </button>
+    </section>
+  </form>
+</mat-dialog-content>

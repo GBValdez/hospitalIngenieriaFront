@@ -1,0 +1,112 @@
+<section class="flex justify-between">
+  <h2 class="title">Usuarios</h2>
+</section>
+
+@if(users.length>0){
+<mat-card class="w-full">
+  <mat-card-content>
+    <form
+      (ngSubmit)="search()"
+      class="flex sm:justify-between justify-center flex-wrap w-full"
+      [formGroup]="form"
+    >
+      <mat-form-field class="sm:w-[30%] w-full">
+        <mat-label>UserName</mat-label>
+        <input matInput placeholder="Nombre" formControlName="UserNameCont" />
+      </mat-form-field>
+      <mat-form-field class="sm:w-[30%] w-full">
+        <mat-label>Email</mat-label>
+        <input matInput placeholder="Nombre" formControlName="EmailCont" />
+      </mat-form-field>
+
+      <mat-form-field class="sm:w-[30%] w-full">
+        <mat-label>Roles</mat-label>
+        <mat-select formControlName="roles" multiple>
+          @for (rol of rolesOpt; track rol) {
+          <mat-option [value]="rol.id">{{ rol.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="sm:w-[30%] w-full">
+        <mat-label>Estado</mat-label>
+        <mat-select formControlName="isActive">
+          <mat-option [value]="null">Todos</mat-option>
+          <mat-option [value]="true">Activo</mat-option>
+          <mat-option [value]="false">Inactivo</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div class="flex justify-end w-full flex-wrap">
+        <button
+          mat-raised-button
+          class="ml-[5px] mt-[5px]"
+          type="button"
+          (click)="cleanFilter()"
+        >
+          Limpiar
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          class="ml-[5px] mt-[5px]"
+          type="submit"
+          [disabled]="form.invalid"
+        >
+          Buscar
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+<section class="flex flex-wrap">
+  @for (user of users; track $index) {
+  <mat-card
+    class="w-[250px] m-[5px] cursor-pointer box-border"
+    [matMenuTriggerFor]="menu"
+  >
+    <mat-card-header>
+      <mat-card-title
+        ><h3 class="titleItem">
+          {{ user.userName }}
+        </h3></mat-card-title
+      >
+    </mat-card-header>
+    <mat-card-content>
+      <div class="break-words">
+        <h4 class="subtitleItem">Email:</h4>
+        {{ user.email }}
+      </div>
+      <div>
+        <h4 class="subtitleItem">Estado:</h4>
+        {{ user.isActive ? "Activo" : "Inactivo" }}
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <mat-menu #menu="matMenu" xPosition="after">
+    <button
+      mat-menu-item
+      [routerLink]="'/session/user-home/edit/' + user.userName"
+    >
+      <mat-icon>edit</mat-icon>
+      <span>Editar</span>
+    </button>
+  </mat-menu>
+  }
+</section>
+<footer>
+  <mat-paginator
+    [length]="sizeUsers"
+    [pageSize]="10"
+    [pageSizeOptions]="[5, 10, 15, 20]"
+    class="rounded-xl"
+    (page)="changePagination($event)"
+  >
+  </mat-paginator>
+</footer>
+} @else{
+<img
+  class="sm:w-[40%] w-[90%] left-0 right-0 mx-auto rounded-3xl"
+  src="./assets/img/noFound.png"
+  alt=""
+/>
+}

@@ -1,0 +1,18 @@
+<form [formGroup]="form" class="w-full">
+  <div class="w-full flex justify-between">
+    <mat-form-field class="w-[49%]">
+      <mat-label>Desde</mat-label>
+      <input type="time" matInput formControlName="init" />
+      <mat-error>El campo es requerido</mat-error>
+    </mat-form-field>
+    <mat-form-field class="w-[49%]">
+      <mat-label>Hasta</mat-label>
+      <input type="time" matInput formControlName="end" />
+      <mat-error>El campo es requerido</mat-error>
+    </mat-form-field>
+  </div>
+
+  @if(form.hasError("rangeInvalid")){
+  <p class="text-red-600">La hora de inicio debe ser menor a la hora de fin</p>
+  }
+</form>

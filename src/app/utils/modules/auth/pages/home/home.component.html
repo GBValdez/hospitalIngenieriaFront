@@ -1,0 +1,72 @@
+<div
+  class="flex fixed flex-wrap justify-center w-full h-full left-0 top-0 pt-[30px] overflow-hidden"
+  style="background-image: url('fondoLogin.webp'); background-size: cover"
+>
+  <div class="w-full flex justify-center flex-wrap">
+    <h2>Bienvenido a Pedidos</h2>
+  </div>
+</div>
+
+<section class="w-full h-full flex justify-center items-center">
+  <mat-card class="w-[30%] min-w-[250px]">
+    <mat-card-header>
+      <mat-card-title><h3>Iniciar Sesión</h3></mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="login()">
+        <mat-form-field class="w-full mb-2">
+          <mat-label>Correo</mat-label>
+          <input
+            matInput
+            type="text"
+            Biografía="Correo"
+            formControlName="email"
+          />
+          <mat-error>El campo es <strong>requerido</strong></mat-error>
+        </mat-form-field>
+        <mat-form-field class="w-full mb-2">
+          <mat-label>Contraseña</mat-label>
+          <input
+            matInput
+            type="password"
+            placeholder="Contraseña"
+            formControlName="password"
+            #passwordInput
+          />
+          <button
+            matSuffix
+            mat-icon-button
+            type="button"
+            (click)="
+              passwordInput.type =
+                passwordInput.type == 'text' ? 'password' : 'text'
+            "
+          >
+            <mat-icon>{{
+              passwordInput.type == "text" ? "visibility_off" : "visibility"
+            }}</mat-icon>
+          </button>
+          <mat-error>El campo es <strong>requerido</strong></mat-error>
+        </mat-form-field>
+        <div class="w-full flex justify-center">
+          <button mat-raised-button color="primary" type="submit">
+            Iniciar Sesión
+          </button>
+        </div>
+      </form>
+      <br />
+      <p
+        class="text-center font-bold cursor-pointer text-orange-600"
+        (click)="forgotPassword()"
+      >
+        ¿Olvidaste tu contraseña?
+      </p>
+      <p
+        class="text-center text-orange-600 font-bold cursor-pointer"
+        (click)="createAccount()"
+      >
+        ¿No tienes usuario aun? Regístrate
+      </p>
+    </mat-card-content>
+  </mat-card>
+</section>

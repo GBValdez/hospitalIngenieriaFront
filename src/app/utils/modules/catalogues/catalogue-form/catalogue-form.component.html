@@ -1,0 +1,82 @@
+@if(dataCatalogue){
+
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      <h2 class="title">
+        {{ dataCatalogue.catalogue ? "Editar" : "Crear" }}
+        {{ dataCatalogue.title }}
+      </h2>
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-form-field class="w-full mb-3">
+        <mat-label>Nombre</mat-label>
+        <input
+          matInput
+          placeholder="Nombre"
+          formControlName="name"
+          [maxLength]="50"
+        />
+        <mat-error> El campo es requerido </mat-error>
+      </mat-form-field>
+      <mat-form-field class="w-full mb-3">
+        <mat-label>Descripción</mat-label>
+        <textarea
+          matInput
+          placeholder="descripcion"
+          formControlName="description"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="1"
+          cdkAutosizeMaxRows="5"
+          [maxLength]="255"
+        ></textarea>
+        <mat-error> El campo es requerido </mat-error>
+      </mat-form-field>
+      @if (dependency) {
+      <mat-form-field class="w-full mb-3">
+        <mat-label>{{ dependency.name }}</mat-label>
+        <mat-select formControlName="catalogueParentId">
+          @for (item of catalogueDependency; track $index) {
+          <mat-option [value]="item.id">
+            {{ item.name }}
+          </mat-option>
+          }
+        </mat-select>
+        <mat-error> El campo es requerido </mat-error>
+      </mat-form-field>
+      }
+
+      <div class="flex justify-end w-full flex-wrap">
+        <button
+          mat-raised-button
+          class="ml-[5px] mt-[5px]"
+          type="button"
+          mat-dialog-close
+          color="warn"
+        >
+          Cancelar
+        </button>
+        <button
+          mat-raised-button
+          class="ml-[5px] mt-[5px]"
+          type="button"
+          (click)="cleanForm()"
+        >
+          Limpiar
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          class="ml-[5px] mt-[5px]"
+          type="submit"
+          [disabled]="form.invalid"
+        >
+          Guardar
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+}

@@ -1,0 +1,22 @@
+<app-input-autocomplete
+  (writingEvent)="founding($event)"
+  [options]="listOpt"
+  [noFilter]="!isLocal"
+  (selectedEvent)="addItems($event)"
+  [formControl]="inputControl"
+  (noExistOptionEvent)="noExistOption($event)"
+>
+  <ng-content></ng-content
+></app-input-autocomplete>
+<section class="flex flex-wrap justify-center">
+  @if (itemsSelected.length>0) { @for (item of itemsSelected; track $index) {
+  <div
+    class="bg-orange-600 flex items-center w-[220px] text-white rounded-lg p-2 m-1"
+  >
+    <span class="font-black text-lg w-[250px]">{{ item.name }}</span>
+    <mat-icon (click)="removeItem(item)" class="cursor-pointer">close</mat-icon>
+  </div>
+  } } @else {
+  <div class="text-red-500 font-bold">No ha seleccionado ningún registro</div>
+  }
+</section>

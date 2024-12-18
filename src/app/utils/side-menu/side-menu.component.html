@@ -1,0 +1,24 @@
+<nav
+  (mouseenter)="noCollapseMenu()"
+  (mouseleave)="collapseMenu()"
+  (touchEnd)="start()"
+  [ngClass]="{ navCollapse: collapseValue }"
+>
+  <section class="body">
+    <section class="header">
+      <img [hidden]="!showElementsValue" class="logo" src="logo.webp" />
+      <h3 [hidden]="!showElementsValue">Pedidos</h3>
+      @if(gmail){
+      <h4 [hidden]="!showElementsValue">{{ gmail }}</h4>
+      }
+      <img [hidden]="showElementsValue" class="logo-only" src="logo.webp" />
+    </section>
+    <section class="menu">
+      <app-sub-level
+        [collapseObs]="getObsColapse()"
+        [showElementsObs]="getObsShowElements()"
+        [buttons]="buttons"
+      ></app-sub-level>
+    </section>
+  </section>
+</nav>

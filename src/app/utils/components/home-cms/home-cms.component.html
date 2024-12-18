@@ -1,0 +1,61 @@
+<section class="flex justify-between flex-wrap">
+  <h2 class="title">{{ homeSvc().title }}</h2>
+  <button class="sm:mb-0 mb-[10px]" mat-raised-button (click)="openForm()">
+    Crear {{ homeSvc().title }}
+  </button>
+</section>
+
+@if(data.length>0){
+<section class="flex flex-wrap">
+  @for (item of data; track $index) {
+  <mat-card
+    class="w-[250px] m-[5px] cursor-pointer pb-4"
+    [matMenuTriggerFor]="menu"
+  >
+    <mat-card-header>
+      <mat-card-title></mat-card-title>
+      <mat-card-subtitle>
+        <ng-container
+          *ngTemplateOutlet="templateRef; context: { $implicit: item }"
+        ></ng-container>
+        <!-- Html del padre  -->
+      </mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+  <mat-menu #menu="matMenu" xPosition="after">
+    <button mat-menu-item (click)="openForm(item)">
+      <mat-icon>edit</mat-icon>
+      <span>Editar</span>
+    </button>
+
+    <button mat-menu-item (click)="deleteItem(item)">
+      <mat-icon>delete</mat-icon>
+      <span>Borrar</span>
+    </button>
+    @if(homeSvc().submenu){ @for (itemBtn of homeSvc().submenu; track $index) {
+    <button mat-menu-item (click)="clickBtn(itemBtn.click, item.id)">
+      <mat-icon>{{ itemBtn.icon }}</mat-icon>
+      <span>{{ itemBtn.text }}</span>
+    </button>
+    } }
+  </mat-menu>
+  }
+</section>
+<footer>
+  <mat-paginator
+    [length]="this.dataSize"
+    [pageSize]="10"
+    [pageIndex]="pageNumber"
+    [pageSizeOptions]="[5, 10, 15, 20]"
+    class="rounded-xl"
+    (page)="changePagination($event)"
+  >
+  </mat-paginator>
+</footer>
+} @else{
+<img
+  class="sm:w-[40%] w-[90%] left-0 right-0 mx-auto rounded-3xl"
+  src="noFound.webp"
+  alt=""
+/>
+}

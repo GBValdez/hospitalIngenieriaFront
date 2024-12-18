@@ -1,0 +1,75 @@
+@if(userEdit) {
+<h2 class="title">{{ userEdit.userName }}</h2>
+<form
+  (ngSubmit)="save()"
+  [formGroup]="form"
+  class="flex justify-between flex-wrap"
+>
+  <mat-card class="w-full">
+    <mat-card-header>
+      <mat-card-title
+        ><h2 class="titleItem">Información General</h2>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <section>
+        <div class="break-words">
+          <h4 class="titleItem">Email:</h4>
+          {{ userEdit.email }}
+        </div>
+        <mat-form-field class="w-full mt-[5px]">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="status">
+            <mat-option [value]="true"> Activo </mat-option>
+            <mat-option [value]="false"> Inactivo </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </section>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="mt-[5px] w-full">
+    <mat-card-header>
+      <mat-card-title><h3 class="titleItem">Roles</h3> </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <app-list-maker-list
+        [listOpt]="rolOpt"
+        (foundingEvent)="foundRoles($event)"
+        formControlName="roles"
+      >
+        Buscar Rol
+      </app-list-maker-list>
+      <section class="flex justify-end">
+        <button mat-raised-button (click)="clean()">Limpiar</button>
+      </section>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="my-3 w-full">
+    <mat-card-content>
+      <div class="flex justify-end w-full flex-wrap">
+        <button
+          mat-raised-button
+          color="warn"
+          class="ml-2"
+          (click)="cancel()"
+          type="button"
+        >
+          Cancelar
+        </button>
+        <button
+          mat-raised-button
+          [disabled]="form.invalid"
+          class="ml-2"
+          color="primary"
+          type="submit"
+        >
+          Guardar
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</form>
+
+}
