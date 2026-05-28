@@ -37,22 +37,9 @@ export class GeneralMenuComponent implements OnInit {
         show: true,
       },
       {
-        text: 'Ordenes',
-        icon: 'shopping_cart',
-        child: [
-          {
-            text: 'Realizar Orden',
-            icon: 'add_shopping_cart',
-            click: '/session/orders-add',
-            show: true,
-          },
-          {
-            text: 'Historial de Ordenes',
-            icon: 'history',
-            click: '/session/orders-home',
-            show: true,
-          },
-        ],
+        text: 'Citas',
+        icon: 'event',
+        click: '/session/appointments',
         show: res?.roles.includes('userNormal'),
       },
       {
@@ -64,18 +51,6 @@ export class GeneralMenuComponent implements OnInit {
             text: 'Usuarios',
             icon: 'people',
             click: '/session/user-home',
-            show: true,
-          },
-          {
-            text: 'Proveedores',
-            icon: 'local_shipping',
-            click: '/session/provider-home',
-            show: true,
-          },
-          {
-            text: 'Productos',
-            icon: 'shopping_cart',
-            click: '/session/product-home',
             show: true,
           },
           {

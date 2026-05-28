@@ -17,14 +17,14 @@ const createRouteCatalogue = (
   afterComplete?: (
     data: catalogueInterface,
     matDialog: MatDialog,
-    matDialogRef: MatDialogRef<CatalogueFormComponent>
-  ) => void
+    matDialogRef: MatDialogRef<CatalogueFormComponent>,
+  ) => void,
 ): Route => {
   return {
     path: `catalogue/${name}`,
     loadComponent: () =>
       import(`@catalogues/catalogues-home/catalogues-home.component`).then(
-        (m) => m.CataloguesHomeComponent
+        (m) => m.CataloguesHomeComponent,
       ),
     canActivate: [AuthGuard],
     data: {
@@ -45,8 +45,8 @@ const CATALOGUE_ROUTE = catalogueData.map((catalogue) =>
     catalogue.name,
     catalogue.dependency,
     catalogue.subMenu,
-    catalogue.afterComplete
-  )
+    catalogue.afterComplete,
+  ),
 );
 
 export const routes: Routes = [
@@ -62,7 +62,7 @@ export const routes: Routes = [
     path: 'user/confirmEmail',
     loadComponent: () =>
       import('@user/pages/user-verify-email/user-verify-email.component').then(
-        (m) => m.UserVerifyEmailComponent
+        (m) => m.UserVerifyEmailComponent,
       ),
     title: 'Verificar email',
     data: { isProtect: 30 },
@@ -72,7 +72,7 @@ export const routes: Routes = [
     path: 'user/resetPassword/:gmail/:token',
     loadComponent: () =>
       import('@user/pages/reset-password/reset-password.component').then(
-        (m) => m.ResetPasswordComponent
+        (m) => m.ResetPasswordComponent,
       ),
     title: 'Reiniciar contraseña',
     data: { isProtect: 30 },
@@ -83,14 +83,14 @@ export const routes: Routes = [
     path: 'session',
     loadComponent: () =>
       import('@user/pages/general-menu/general-menu.component').then(
-        (m) => m.GeneralMenuComponent
+        (m) => m.GeneralMenuComponent,
       ),
     children: [
       {
         path: 'dashboard',
         loadComponent: () =>
           import('@user/pages/dashboard/dashboard.component').then(
-            (m) => m.DashboardComponent
+            (m) => m.DashboardComponent,
           ),
         canActivate: [AuthGuard],
         data: { isProtect: 20 },
@@ -101,7 +101,7 @@ export const routes: Routes = [
         path: 'user-home',
         loadComponent: () =>
           import('@user/pages/user-home/user-home.component').then(
-            (m) => m.UserHomeComponent
+            (m) => m.UserHomeComponent,
           ),
         canActivate: [AuthGuard],
         data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
@@ -111,13 +111,21 @@ export const routes: Routes = [
         path: 'user-home/edit/:userName',
         loadComponent: () =>
           import('@user/pages/user-edit/user-edit.component').then(
-            (m) => m.UserEditComponent
+            (m) => m.UserEditComponent,
           ),
         title: 'Usuarios',
         data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
         canActivate: [AuthGuard],
       },
-
+      {
+        path: 'appointments',
+        loadComponent: () =>
+          import('@appointments/page/appointments/appointments.component.ts').then(
+            (m) => m.AppointmentsComponent,
+          ),
+        data: { isProtect: 20, roles: ['userNormal'] },
+        canActivate: [AuthGuard],
+      },
       ...CATALOGUE_ROUTE,
     ],
   },

@@ -48,7 +48,7 @@ export class CatalogueFormComponent implements OnInit {
     private fb: FormBuilder,
     private catalogueSvc: CatalogueService,
     private dialogRef: MatDialogRef<CatalogueFormComponent>,
-    private matDialog: MatDialog
+    private matDialog: MatDialog,
   ) {}
   ngOnInit(): void {
     this.dataCatalogue = this.data;
@@ -82,10 +82,10 @@ export class CatalogueFormComponent implements OnInit {
         .subscribe((res) => {
           this.catalogueDependency = res.items;
           console.log(this.dataCatalogue.catalogue);
-          this.form.patchValue({
-            catalogueParentId:
-              this.dataCatalogue.catalogue?.catalogueParent?.id,
-          });
+          // this.form.patchValue({
+          //   catalogueParentId:
+          //     this.dataCatalogue.catalogue?.catalogueParent?.id,
+          // });
         });
     }
   }
@@ -116,7 +116,7 @@ export class CatalogueFormComponent implements OnInit {
             .update(
               this.dataCatalogue.catalogue.id!,
               this.dataCatalogue.typeCatalogue,
-              this.form.value
+              this.form.value,
             )
             .subscribe((res) => {
               this.closeDialog();

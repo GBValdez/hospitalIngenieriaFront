@@ -10,13 +10,8 @@
       "@auth/*": ["src/app/utils/modules/auth/*"],
       "@user/*": ["src/app/utils/modules/user/*"],
       "@catalogues/*": ["src/app/utils/modules/catalogues/*"],
-      "@providersModule/*": ["src/app/providersModule/*"],
-      "@product/*": ["src/app/products/*"],
-      "@station/*": ["src/app/station/*"],
-      "@drivers/*": ["src/app/drivers/*"],
       "@env/*": ["src/environments/*"],
-      "@orders/*": ["src/app/orders/*"],
-      "@devices/*": ["src/app/devices/*"]
+      "@appointments/*": ["src/app/Appointments"]
     },
     "strict": true,
     "noImplicitOverride": true,

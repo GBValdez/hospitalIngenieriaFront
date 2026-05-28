@@ -20,6 +20,7 @@ import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { authUserInterface } from '@auth/interface/auth.inteface';
 import { UserCreateComponent } from '@utils/modules/user/pages/user-create/user-create.component';
+import { BtnUploadFileModule } from '@utils/btn-upload-file/btn-upload-file.module';
 
 @Component({
   selector: 'app-home',
@@ -34,6 +35,7 @@ import { UserCreateComponent } from '@utils/modules/user/pages/user-create/user-
     ForgotPasswordComponent,
     MatIconModule,
     UserCreateComponent,
+    BtnUploadFileModule,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',

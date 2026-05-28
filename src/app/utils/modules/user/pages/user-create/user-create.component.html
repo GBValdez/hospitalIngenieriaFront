@@ -13,20 +13,38 @@
     </mat-form-field>
 
     <mat-form-field class="w-full mb-[5px] mt-4">
+      <mat-label>DPI</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="dpi"
+        [maxlength]="13"
+        appOnlyNumberInput
+      />
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="w-full mb-[5px] mt-4">
       <mat-label>Fecha Nacimiento</mat-label>
-      <input matInput [matDatepicker]="picker" formControlName="birthdate" />
+      <input matInput [matDatepicker]="picker" formControlName="birthday" />
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
-      @if(form.get('birthdate')!.hasError('required')){
-      <mat-error>El campo es <strong>requerido</strong></mat-error>
-      } @if(form.get('birthdate')!.hasError('menorDeEdad')){
-      <mat-error>El usuario debe ser mayor de edad</mat-error>
+      @if (form.get("birthday")!.hasError("required")) {
+        <mat-error>El campo es <strong>requerido</strong></mat-error>
+      }
+      @if (form.get("birthday")!.hasError("menorDeEdad")) {
+        <mat-error>El usuario debe ser mayor de edad</mat-error>
       }
     </mat-form-field>
 
     <mat-form-field class="w-full mb-[5px] mt-4">
       <mat-label>Dirección</mat-label>
-      <input matInput type="text" formControlName="address" [maxlength]="100" />
+      <input
+        matInput
+        type="text"
+        formControlName="direction"
+        [maxlength]="100"
+      />
       <mat-error>El campo es <strong>requerido</strong></mat-error>
     </mat-form-field>
 
@@ -35,7 +53,7 @@
       <input
         matInput
         type="text"
-        formControlName="tel"
+        formControlName="phoneNumber"
         [maxlength]="10"
         appOnlyNumberInput
       />
@@ -43,14 +61,35 @@
     </mat-form-field>
 
     <mat-form-field class="w-full mb-[5px] mt-4">
+      <mat-label>Nacionalidad</mat-label>
+      <mat-select formControlName="nationalityId">
+        @for (item of nationalities; track $index) {
+          <mat-option [value]="item.id">{{ item.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="w-full mb-[5px] mt-4">
+      <mat-label>Sexo</mat-label>
+      <mat-select formControlName="sexId">
+        @for (item of sex; track $index) {
+          <mat-option [value]="item.id">{{ item.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>El campo es <strong>requerido</strong></mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="w-full mb-[5px] mt-4">
       <mat-label>UserName</mat-label>
       <input matInput type="text" formControlName="userName" />
-      @if ( form.get('userName')!.hasError('required') ){
-      <mat-error>El campo es <strong>requerido</strong></mat-error>
-      } @if ( form.get('userName')!.hasError('pattern') ){
-      <mat-error
-        >El nombre de usuario solo puede contener letras o dígitos</mat-error
-      >
+      @if (form.get("userName")!.hasError("required")) {
+        <mat-error>El campo es <strong>requerido</strong></mat-error>
+      }
+      @if (form.get("userName")!.hasError("pattern")) {
+        <mat-error
+          >El nombre de usuario solo puede contener letras o dígitos</mat-error
+        >
       }
     </mat-form-field>
     <mat-form-field class="w-full mb-[5px]">
@@ -79,17 +118,16 @@
           passwordInput.type == "text" ? "visibility_off" : "visibility"
         }}</mat-icon>
       </button>
-      @if(form.get('password')!.hasError('required')){
-      <mat-error>El campo es <strong>requerido</strong></mat-error>
+      @if (form.get("password")!.hasError("required")) {
+        <mat-error>El campo es <strong>requerido</strong></mat-error>
       }
     </mat-form-field>
-    @if(form.get('password')!.hasError('pattern')){
-    <p class="text-red-500">
-      La contraseña debe contener: 8 caracteres de longitud, una letra mayúscula
-      , una letra minúscula, al menos un numero, un carácter especial ({{
-        symbols
-      }}).
-    </p>
+    @if (form.get("password")!.hasError("pattern")) {
+      <p class="text-red-500">
+        La contraseña debe contener: 8 caracteres de longitud, una letra
+        mayúscula , una letra minúscula, al menos un numero, un carácter
+        especial ({{ symbols }}).
+      </p>
     }
     <section class="flex justify-end w-full flex-wrap">
       <button

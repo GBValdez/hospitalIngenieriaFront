@@ -20,8 +20,8 @@ export interface userUpdateDto {
 
 export interface clienteDto {
   name: string;
-  birthdate: Date;
+  birthday: Date;
   email: string;
-  tel: string;
-  address: string;
+  phoneNumber: string;
+  direction: string;
 }

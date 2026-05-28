@@ -14,7 +14,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { UserService } from '@user/services/user.service';
+import { catalogueInterface } from '@utils/commons.interface';
 import { OnlyNumberInputDirective } from '@utils/directivas/only-number-input.directive';
+import { CatalogueService } from '@utils/modules/catalogues/services/catalogue.service';
 import { Moment } from 'moment';
 import Swal from 'sweetalert2';
 
@@ -39,21 +41,32 @@ export class UserCreateComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private userSvc: UserService,
-    private dialogRef: MatDialogRef<UserCreateComponent>
+    private dialogRef: MatDialogRef<UserCreateComponent>,
+    private catalogueSvc: CatalogueService,
   ) {}
+
+  nationalities: catalogueInterface[] = [];
+  sex: catalogueInterface[] = [];
   ngOnInit(): void {
+    this.catalogueSvc.get('nationality', 1, 10, {}, true).subscribe((data) => {
+      this.nationalities = data.items;
+    });
+    this.catalogueSvc.get('sex', 1, 10, {}, true).subscribe((data) => {
+      this.sex = data.items;
+    });
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(50)]],
-      birthdate: ['', [Validators.required, this.fechaNacimientoValidator()]],
-      tel: ['', [Validators.required]],
-      address: ['', [Validators.required, Validators.maxLength(100)]],
+      dpi: ['', [Validators.required, Validators.maxLength(13)]],
+      birthday: ['', [Validators.required, this.fechaNacimientoValidator()]],
+      phoneNumber: ['', [Validators.required, Validators.maxLength(10)]],
+      direction: ['', [Validators.required, Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
       password: [
         '',
         [
           Validators.required,
           Validators.pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
           ),
         ],
       ],
@@ -61,6 +74,8 @@ export class UserCreateComponent implements OnInit {
         '',
         [Validators.required, Validators.pattern('^[a-zA-Z0-9]+$')],
       ],
+      nationalityId: ['', [Validators.required]],
+      sexId: ['', [Validators.required]],
     });
   }
   symbols: string = '@$!%*?&#';
@@ -87,7 +102,7 @@ export class UserCreateComponent implements OnInit {
     if (ALERT.isConfirmed)
       if (this.form.valid) {
         const DATA = this.form.value;
-        DATA.birthdate = new Date(DATA.birthdate).toISOString().split('T')[0];
+        DATA.birthday = new Date(DATA.birthday).toISOString().split('T')[0];
         this.userSvc.createUser(DATA).subscribe((res) => {
           Swal.fire({
             title: 'Usuario creado',

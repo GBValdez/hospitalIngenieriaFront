@@ -9,8 +9,6 @@ import { CatalogueFormComponent } from './modules/catalogues/catalogue-form/cata
 export interface catalogueInterface extends dtoCommons<number | string> {
   name: string;
   description: string;
-  catalogueParentId?: number | string;
-  catalogueParent?: catalogueInterface;
 }
 
 export interface catalogueChildInterface extends catalogueInterface {
@@ -20,7 +18,6 @@ export interface catalogueQuery {
   id?: number;
   name?: string;
   all?: boolean;
-  catalogueParentId?: number;
 }
 
 export interface catalogueModal {
