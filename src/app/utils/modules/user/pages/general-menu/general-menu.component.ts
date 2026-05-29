@@ -46,7 +46,7 @@ export class GeneralMenuComponent implements OnInit {
           res?.roles.includes('ADMINISTRATOR'),
       },
       {
-        text: 'Despachar medicina',
+        text: 'Inventario',
         icon: 'medication',
         click: '/session/dispatch-medicine',
         show:

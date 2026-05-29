@@ -173,7 +173,7 @@ export const routes: Routes = [
           ).then((m) => m.DespacharMedicinaComponent),
         data: { isProtect: 20, roles: ['PHARMACY_ATTENDANT', 'ADMINISTRATOR'] },
         canActivate: [AuthGuard],
-        title: 'Despachar medicina',
+        title: 'Inventario',
       },
       ...CATALOGUE_ROUTE,
     ],

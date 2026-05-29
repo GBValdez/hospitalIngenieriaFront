@@ -1,11 +1,49 @@
-.dispatch-page {
+.dispatch-page,
+.view-stack,
+.entry-dialog {
   display: grid;
   gap: 1rem;
 }
 
+.page-header,
+.section-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
 .page-header h1,
-.tool-panel h2 {
+.tool-panel h2,
+.entry-dialog h2 {
   margin: 0;
+}
+
+.page-header span {
+  color: #64748b;
+  display: block;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+.row-actions,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.medicine-tabs {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tab-content {
+  border: 0;
+  border-radius: 0;
+  margin-top: 0;
 }
 
 .tool-panel {
@@ -22,8 +60,7 @@
   grid-template-columns: minmax(220px, 360px) auto;
 }
 
-.recipe-header,
-.inventory-layout {
+.recipe-header {
   display: grid;
   gap: 0.75rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -44,8 +81,7 @@
   gap: 0.75rem;
 }
 
-.medicine-row,
-.movement-row {
+.medicine-row {
   align-items: center;
   border-top: 1px solid #e2e8f0;
   display: grid;
@@ -54,13 +90,15 @@
   padding-top: 0.75rem;
 }
 
-.movement-row {
-  grid-template-columns: minmax(150px, 1fr) 90px minmax(140px, 1fr) 70px 110px minmax(180px, 1.5fr);
+.table-wrap {
+  overflow-x: auto;
 }
 
-.inventory-row,
-.total-row,
-.actions {
+table {
+  width: 100%;
+}
+
+.total-row {
   display: flex;
   gap: 0.75rem;
   justify-content: space-between;
@@ -70,14 +108,24 @@
   justify-content: flex-end;
 }
 
+.entry-dialog {
+  padding: 1rem;
+}
+
 .error {
   color: #b42318;
 }
 
 @media (max-width: 900px) {
+  .page-header,
+  .section-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .search-panel,
-  .medicine-row,
-  .movement-row {
+  .medicine-row {
     grid-template-columns: 1fr;
   }
+
 }

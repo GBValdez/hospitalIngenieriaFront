@@ -1,117 +1,215 @@
 <section class="dispatch-page">
   <header class="page-header">
-    <h1>Despachar medicina</h1>
+    <div>
+      <h1>Inventario de medicina</h1>
+      <span>{{ activeView === "inventory" ? "Inventario" : activeView === "dispatch" ? "Despachar medicina" : "Movimientos recientes" }}</span>
+    </div>
   </header>
 
   <p *ngIf="error" class="error">{{ error }}</p>
 
-  <form class="tool-panel search-panel" [formGroup]="searchForm" (ngSubmit)="searchRecipe()">
-    <mat-form-field>
-      <mat-label>No. de cita / receta</mat-label>
-      <input matInput type="text" formControlName="appointmentId" appOnlyNumberInput />
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit" [disabled]="loadingRecipe">
-      {{ loadingRecipe ? "Buscando..." : "Buscar receta" }}
-    </button>
-  </form>
+  <mat-tab-group
+    class="medicine-tabs"
+    [selectedIndex]="selectedTabIndex"
+    (selectedIndexChange)="changeTab($event)"
+  >
+    <mat-tab label="Inventario">
+      <section class="tool-panel tab-content">
+        <header class="section-header">
+          <h2>Inventario</h2>
+          <button mat-stroked-button color="primary" type="button" (click)="loadInventory()">
+            Actualizar
+          </button>
+        </header>
 
-  <section *ngIf="recipe" class="tool-panel">
-    <header class="recipe-header">
-      <div>
-        <strong>{{ recipe.patientName }}</strong>
-        <span>Paciente</span>
-      </div>
-      <div>
-        <strong>{{ recipe.doctorName }}</strong>
-        <span>Doctor</span>
-      </div>
-      <div>
-        <strong>{{ recipe.appointmentDate | date: "medium" }}</strong>
-        <span>Fecha</span>
-      </div>
-    </header>
+        <p *ngIf="loadingInventory">Cargando inventario...</p>
 
-    <form [formGroup]="dispatchForm" (ngSubmit)="dispatch()">
-      <div formArrayName="medicines" class="medicine-list">
-        <article
-          *ngFor="let medicine of recipe.medicines; let i = index"
-          [formGroupName]="i"
-          class="medicine-row"
-        >
-          <mat-checkbox formControlName="selected">
-            {{ medicine.medicineName }}
-          </mat-checkbox>
-          <span>Prescrito: {{ medicine.prescribedAmount }}</span>
-          <span>Pendiente: {{ medicine.pendingAmount }}</span>
-          <span>Stock: {{ medicine.availableStock }}</span>
-          <span>Precio: Q{{ medicine.price | number: "1.2-2" }}</span>
+        <div class="table-wrap" *ngIf="!loadingInventory">
+          <table mat-table [dataSource]="inventory">
+            <ng-container matColumnDef="medicineName">
+              <th mat-header-cell *matHeaderCellDef>Medicamento</th>
+              <td mat-cell *matCellDef="let item">{{ item.medicineName }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef>Precio</th>
+              <td mat-cell *matCellDef="let item">Q{{ item.price | number: "1.2-2" }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="stock">
+              <th mat-header-cell *matHeaderCellDef>Stock</th>
+              <td mat-cell *matCellDef="let item">
+                <strong>{{ item.stock }}</strong>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Opciones</th>
+              <td mat-cell *matCellDef="let item">
+                <div class="row-actions">
+                  <button mat-stroked-button color="primary" type="button" (click)="openInventoryEntry(item)">
+                    Entrada
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="inventoryColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: inventoryColumns"></tr>
+          </table>
+        </div>
+      </section>
+    </mat-tab>
+
+    <mat-tab label="Despachar receta">
+      <section class="view-stack tab-content">
+        <form class="tool-panel search-panel" [formGroup]="searchForm" (ngSubmit)="searchRecipe()">
           <mat-form-field>
-            <mat-label>Cantidad</mat-label>
-            <input matInput type="text" formControlName="amount" appOnlyNumberInput />
-            <mat-error *ngIf="amountControl(i)?.invalid">Cantidad invalida</mat-error>
+            <mat-label>No. de cita / receta</mat-label>
+            <input matInput type="text" formControlName="appointmentId" appOnlyNumberInput />
           </mat-form-field>
-          <strong>
-            Q{{ ((amountControl(i)?.value || 0) * medicine.price) | number: "1.2-2" }}
-          </strong>
-        </article>
-      </div>
+          <button mat-raised-button color="primary" type="submit" [disabled]="loadingRecipe">
+            {{ loadingRecipe ? "Buscando..." : "Buscar receta" }}
+          </button>
+        </form>
 
-      <div class="total-row">
-        <span>Total a pagar</span>
-        <strong>Q{{ total | number: "1.2-2" }}</strong>
-      </div>
+        <section *ngIf="recipe" class="tool-panel">
+          <header class="recipe-header">
+            <div>
+              <strong>{{ recipe.patientName }}</strong>
+              <span>Paciente</span>
+            </div>
+            <div>
+              <strong>{{ recipe.doctorName }}</strong>
+              <span>Doctor</span>
+            </div>
+            <div>
+              <strong>{{ recipe.appointmentDate | date: "medium" }}</strong>
+              <span>Fecha</span>
+            </div>
+          </header>
 
-      <div class="actions">
-        <button mat-raised-button color="primary" type="submit">Confirmar despacho</button>
-      </div>
-    </form>
-  </section>
+          <form [formGroup]="dispatchForm" (ngSubmit)="dispatch()">
+            <div formArrayName="medicines" class="medicine-list">
+              <article
+                *ngFor="let medicine of recipe.medicines; let i = index"
+                [formGroupName]="i"
+                class="medicine-row"
+              >
+                <mat-checkbox formControlName="selected">
+                  {{ medicine.medicineName }}
+                </mat-checkbox>
+                <span>Prescrito: {{ medicine.prescribedAmount }}</span>
+                <span>Pendiente: {{ medicine.pendingAmount }}</span>
+                <span>Stock: {{ medicine.availableStock }}</span>
+                <span>Precio: Q{{ medicine.price | number: "1.2-2" }}</span>
+                <mat-form-field>
+                  <mat-label>Cantidad</mat-label>
+                  <input matInput type="text" formControlName="amount" appOnlyNumberInput />
+                  <mat-error *ngIf="amountControl(i)?.invalid">Cantidad invalida</mat-error>
+                </mat-form-field>
+                <strong>
+                  Q{{ ((amountControl(i)?.value || 0) * medicine.price) | number: "1.2-2" }}
+                </strong>
+              </article>
+            </div>
 
-  <section class="inventory-layout">
-    <form class="tool-panel" [formGroup]="entryForm" (ngSubmit)="registerEntry()">
-      <h2>Entrada de inventario</h2>
-      <mat-form-field>
-        <mat-label>Medicamento</mat-label>
-        <mat-select formControlName="medicineId">
-          <mat-option *ngFor="let item of inventory" [value]="item.medicineId">
-            {{ item.medicineName }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Cantidad</mat-label>
-        <input matInput type="text" formControlName="amount" appOnlyNumberInput />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Precio unitario</mat-label>
-        <input matInput type="text" formControlName="unitPrice" appOnlyNumberInput />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Motivo</mat-label>
-        <input matInput formControlName="reason" />
-      </mat-form-field>
-      <button mat-raised-button color="primary" type="submit">Registrar entrada</button>
-    </form>
+            <div class="total-row">
+              <span>Total a pagar</span>
+              <strong>Q{{ total | number: "1.2-2" }}</strong>
+            </div>
 
-    <section class="tool-panel">
-      <h2>Inventario</h2>
-      <p *ngIf="loadingInventory">Cargando inventario...</p>
-      <div *ngFor="let item of inventory" class="inventory-row">
-        <span>{{ item.medicineName }}</span>
-        <strong>{{ item.stock }}</strong>
-      </div>
-    </section>
-  </section>
+            <div class="actions">
+              <button mat-raised-button color="primary" type="submit">Confirmar despacho</button>
+            </div>
+          </form>
+        </section>
+      </section>
+    </mat-tab>
 
-  <section class="tool-panel">
-    <h2>Movimientos recientes</h2>
-    <div *ngFor="let movement of movements" class="movement-row">
-      <span>{{ movement.createAt | date: "medium" }}</span>
-      <strong>{{ movement.movementType }}</strong>
-      <span>{{ movement.medicineName }}</span>
-      <span>{{ movement.amount }}</span>
-      <span>{{ movement.previousStock }} -> {{ movement.newStock }}</span>
-      <span>{{ movement.reason }}</span>
-    </div>
-  </section>
+    <mat-tab *ngIf="canViewMovements" label="Movimientos">
+      <section class="tool-panel tab-content">
+        <header class="section-header">
+          <h2>Movimientos recientes</h2>
+          <button mat-stroked-button color="primary" type="button" (click)="loadMovements()">
+            Actualizar
+          </button>
+        </header>
+
+        <div class="table-wrap">
+          <table mat-table [dataSource]="movements">
+            <ng-container matColumnDef="createAt">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let movement">{{ movement.createAt | date: "medium" }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="movementType">
+              <th mat-header-cell *matHeaderCellDef>Tipo</th>
+              <td mat-cell *matCellDef="let movement">{{ movement.movementType }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="medicineName">
+              <th mat-header-cell *matHeaderCellDef>Medicamento</th>
+              <td mat-cell *matCellDef="let movement">{{ movement.medicineName }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+              <td mat-cell *matCellDef="let movement">{{ movement.amount }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="stock">
+              <th mat-header-cell *matHeaderCellDef>Stock</th>
+              <td mat-cell *matCellDef="let movement">
+                {{ movement.previousStock }} -> {{ movement.newStock }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="reason">
+              <th mat-header-cell *matHeaderCellDef>Motivo</th>
+              <td mat-cell *matCellDef="let movement">{{ movement.reason }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="movementColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: movementColumns"></tr>
+          </table>
+        </div>
+      </section>
+    </mat-tab>
+  </mat-tab-group>
 </section>
+
+<ng-template #entryDialog>
+  <form class="entry-dialog" [formGroup]="entryForm" (ngSubmit)="registerEntry()">
+    <h2>{{ entryTitle }}</h2>
+
+    <mat-form-field>
+      <mat-label>Medicamento</mat-label>
+      <mat-select formControlName="medicineId">
+        <mat-option *ngFor="let item of inventory" [value]="item.medicineId">
+          {{ item.medicineName }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Cantidad</mat-label>
+      <input matInput type="text" formControlName="amount" appOnlyNumberInput />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Precio unitario</mat-label>
+      <input matInput type="text" formControlName="unitPrice" appOnlyNumberInput />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Motivo</mat-label>
+      <input matInput formControlName="reason" />
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-button type="button" (click)="closeEntryDialog()">Cancelar</button>
+      <button mat-raised-button color="primary" type="submit">Registrar</button>
+    </div>
+  </form>
+</ng-template>
