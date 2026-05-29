@@ -155,6 +155,26 @@ export const routes: Routes = [
         canActivate: [AuthGuard],
         title: 'Encargados de laboratorio',
       },
+      {
+        path: 'nurses',
+        loadComponent: () =>
+          import('./nurses/pages/nurses/nurses.component').then(
+            (m) => m.NursesComponent,
+          ),
+        data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Enfermeras',
+      },
+      {
+        path: 'dispatch-medicine',
+        loadComponent: () =>
+          import(
+            './medicine-dispatch/pages/despachar-medicina/despachar-medicina.component'
+          ).then((m) => m.DespacharMedicinaComponent),
+        data: { isProtect: 20, roles: ['PHARMACY_ATTENDANT', 'ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Despachar medicina',
+      },
       ...CATALOGUE_ROUTE,
     ],
   },

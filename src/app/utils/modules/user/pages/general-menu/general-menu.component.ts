@@ -46,6 +46,14 @@ export class GeneralMenuComponent implements OnInit {
           res?.roles.includes('ADMINISTRATOR'),
       },
       {
+        text: 'Despachar medicina',
+        icon: 'medication',
+        click: '/session/dispatch-medicine',
+        show:
+          res?.roles.includes('PHARMACY_ATTENDANT') ||
+          res?.roles.includes('ADMINISTRATOR'),
+      },
+      {
         text: 'Administrador',
         icon: 'admin_panel_settings',
         show: res?.roles.includes('ADMINISTRATOR'),
@@ -66,6 +74,12 @@ export class GeneralMenuComponent implements OnInit {
             text: 'Laboratorio',
             icon: 'science',
             click: '/session/laboratory-attendants',
+            show: true,
+          },
+          {
+            text: 'Enfermeras',
+            icon: 'local_hospital',
+            click: '/session/nurses',
             show: true,
           },
           {

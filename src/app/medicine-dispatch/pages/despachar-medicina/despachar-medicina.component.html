@@ -1,0 +1,117 @@
+<section class="dispatch-page">
+  <header class="page-header">
+    <h1>Despachar medicina</h1>
+  </header>
+
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <form class="tool-panel search-panel" [formGroup]="searchForm" (ngSubmit)="searchRecipe()">
+    <mat-form-field>
+      <mat-label>No. de cita / receta</mat-label>
+      <input matInput type="text" formControlName="appointmentId" appOnlyNumberInput />
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit" [disabled]="loadingRecipe">
+      {{ loadingRecipe ? "Buscando..." : "Buscar receta" }}
+    </button>
+  </form>
+
+  <section *ngIf="recipe" class="tool-panel">
+    <header class="recipe-header">
+      <div>
+        <strong>{{ recipe.patientName }}</strong>
+        <span>Paciente</span>
+      </div>
+      <div>
+        <strong>{{ recipe.doctorName }}</strong>
+        <span>Doctor</span>
+      </div>
+      <div>
+        <strong>{{ recipe.appointmentDate | date: "medium" }}</strong>
+        <span>Fecha</span>
+      </div>
+    </header>
+
+    <form [formGroup]="dispatchForm" (ngSubmit)="dispatch()">
+      <div formArrayName="medicines" class="medicine-list">
+        <article
+          *ngFor="let medicine of recipe.medicines; let i = index"
+          [formGroupName]="i"
+          class="medicine-row"
+        >
+          <mat-checkbox formControlName="selected">
+            {{ medicine.medicineName }}
+          </mat-checkbox>
+          <span>Prescrito: {{ medicine.prescribedAmount }}</span>
+          <span>Pendiente: {{ medicine.pendingAmount }}</span>
+          <span>Stock: {{ medicine.availableStock }}</span>
+          <span>Precio: Q{{ medicine.price | number: "1.2-2" }}</span>
+          <mat-form-field>
+            <mat-label>Cantidad</mat-label>
+            <input matInput type="text" formControlName="amount" appOnlyNumberInput />
+            <mat-error *ngIf="amountControl(i)?.invalid">Cantidad invalida</mat-error>
+          </mat-form-field>
+          <strong>
+            Q{{ ((amountControl(i)?.value || 0) * medicine.price) | number: "1.2-2" }}
+          </strong>
+        </article>
+      </div>
+
+      <div class="total-row">
+        <span>Total a pagar</span>
+        <strong>Q{{ total | number: "1.2-2" }}</strong>
+      </div>
+
+      <div class="actions">
+        <button mat-raised-button color="primary" type="submit">Confirmar despacho</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="inventory-layout">
+    <form class="tool-panel" [formGroup]="entryForm" (ngSubmit)="registerEntry()">
+      <h2>Entrada de inventario</h2>
+      <mat-form-field>
+        <mat-label>Medicamento</mat-label>
+        <mat-select formControlName="medicineId">
+          <mat-option *ngFor="let item of inventory" [value]="item.medicineId">
+            {{ item.medicineName }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Cantidad</mat-label>
+        <input matInput type="text" formControlName="amount" appOnlyNumberInput />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Precio unitario</mat-label>
+        <input matInput type="text" formControlName="unitPrice" appOnlyNumberInput />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Motivo</mat-label>
+        <input matInput formControlName="reason" />
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit">Registrar entrada</button>
+    </form>
+
+    <section class="tool-panel">
+      <h2>Inventario</h2>
+      <p *ngIf="loadingInventory">Cargando inventario...</p>
+      <div *ngFor="let item of inventory" class="inventory-row">
+        <span>{{ item.medicineName }}</span>
+        <strong>{{ item.stock }}</strong>
+      </div>
+    </section>
+  </section>
+
+  <section class="tool-panel">
+    <h2>Movimientos recientes</h2>
+    <div *ngFor="let movement of movements" class="movement-row">
+      <span>{{ movement.createAt | date: "medium" }}</span>
+      <strong>{{ movement.movementType }}</strong>
+      <span>{{ movement.medicineName }}</span>
+      <span>{{ movement.amount }}</span>
+      <span>{{ movement.previousStock }} -> {{ movement.newStock }}</span>
+      <span>{{ movement.reason }}</span>
+    </div>
+  </section>
+</section>

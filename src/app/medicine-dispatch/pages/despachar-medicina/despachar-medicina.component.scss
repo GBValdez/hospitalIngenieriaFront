@@ -1,0 +1,83 @@
+.dispatch-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.page-header h1,
+.tool-panel h2 {
+  margin: 0;
+}
+
+.tool-panel {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.search-panel {
+  align-items: start;
+  grid-template-columns: minmax(220px, 360px) auto;
+}
+
+.recipe-header,
+.inventory-layout {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.recipe-header div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.recipe-header span {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.medicine-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.medicine-row,
+.movement-row {
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(160px, 1.4fr) repeat(5, minmax(90px, 1fr)) minmax(100px, 0.8fr);
+  padding-top: 0.75rem;
+}
+
+.movement-row {
+  grid-template-columns: minmax(150px, 1fr) 90px minmax(140px, 1fr) 70px 110px minmax(180px, 1.5fr);
+}
+
+.inventory-row,
+.total-row,
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.actions {
+  justify-content: flex-end;
+}
+
+.error {
+  color: #b42318;
+}
+
+@media (max-width: 900px) {
+  .search-panel,
+  .medicine-row,
+  .movement-row {
+    grid-template-columns: 1fr;
+  }
+}
