@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -10,6 +11,11 @@ import {
 } from '@angular/forms';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
 import { AuthService } from '@auth/services/auth.service';
 import {
   AppointmentCreationDto,
@@ -18,6 +24,7 @@ import {
   AppointmentStatusHistoryDto,
   ExamDto,
   ExamStatusHistoryDto,
+  FinalizarExamDto,
   ReagendarDto,
 } from '../../interfaces/appointments.interface';
 import { InicioCitaComponent } from '../inicio-cita/inicio-cita.component';
@@ -27,18 +34,31 @@ import {
 } from '../reschedule-appointment-dialog/reschedule-appointment-dialog.component';
 import { AppointmentsService } from '../../services/appointments.service';
 import { FinalizarCitaComponent } from '../finalizar-cita/finalizar-cita.component';
+import { ExamTypeDiagnosisDto } from 'src/app/exam-type-diagnoses/interfaces/exam-type-diagnosis.interface';
+import { ExamTypeDiagnosisService } from 'src/app/exam-type-diagnoses/services/exam-type-diagnosis.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-appointments',
   standalone: true,
-  imports: [CommonModule, MatPaginatorModule, ReactiveFormsModule, MatDialogModule],
+  imports: [
+    CommonModule,
+    MatPaginatorModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatMenuModule,
+    MatSelectModule,
+  ],
   templateUrl: './appointments.component.html',
   styleUrls: ['./appointments.component.scss'],
 })
 export class AppointmentsComponent implements OnInit {
   @ViewChild('appointmentDialog') appointmentDialog!: TemplateRef<unknown>;
   @ViewChild('historyDialog') historyDialog!: TemplateRef<unknown>;
+  @ViewChild('finishExamDialog') finishExamDialog!: TemplateRef<unknown>;
 
   appointments: AppointmentDto[] = [];
   exams: ExamDto[] = [];
@@ -64,17 +84,31 @@ export class AppointmentsComponent implements OnInit {
   selectedDoctorId?: number;
   selectedHistoryAppointment?: AppointmentDto;
   selectedHistoryExam?: ExamDto;
+  selectedFinishExam?: ExamDto;
+  allowedExamDiagnoses: ExamTypeDiagnosisDto[] = [];
   private appointmentDialogRef?: MatDialogRef<unknown>;
   private historyDialogRef?: MatDialogRef<unknown>;
+  private finishExamDialogRef?: MatDialogRef<unknown>;
 
+  filterForm: FormGroup;
   appointmentForm: FormGroup;
+  finishExamForm: FormGroup;
 
   constructor(
     private appointmentsService: AppointmentsService,
+    private examTypeDiagnosisService: ExamTypeDiagnosisService,
     private authService: AuthService,
     private fb: FormBuilder,
     private dialog: MatDialog,
+    private router: Router,
   ) {
+    this.filterForm = this.fb.group({
+      reason: [''],
+      estado: [''],
+      startDateFrom: [''],
+      startDateTo: [''],
+    });
+
     this.appointmentForm = this.fb.group({
       startDate: [
         '',
@@ -84,6 +118,11 @@ export class AppointmentsComponent implements OnInit {
         '',
         [Validators.required, Validators.minLength(1), Validators.maxLength(250)],
       ],
+    });
+
+    this.finishExamForm = this.fb.group({
+      results: ['', [Validators.required, Validators.maxLength(1000)]],
+      diseaseOrInjuryIds: [[], [Validators.required]],
     });
   }
 
@@ -123,7 +162,13 @@ export class AppointmentsComponent implements OnInit {
   loadAppointments(pageNumber = 1, pageSize = 10): void {
     this.loading = true;
     this.error = '';
-    this.appointmentsService.get({ pageNumber, pageSize }).subscribe({
+    this.pageNumber = pageNumber;
+    this.pageSize = pageSize;
+    this.appointmentsService.get({
+      pageNumber,
+      pageSize,
+      query: this.mapAppointmentFilters(),
+    }).subscribe({
       next: (result) => {
         this.appointments = result.items;
         this.totalAppointments = result.total;
@@ -138,9 +183,21 @@ export class AppointmentsComponent implements OnInit {
   }
 
   changePagination(event: PageEvent): void {
-    this.pageNumber = event.pageIndex + 1;
-    this.pageSize = event.pageSize;
-    this.loadAppointments(this.pageNumber, this.pageSize);
+    this.loadAppointments(event.pageIndex + 1, event.pageSize);
+  }
+
+  searchAppointments(): void {
+    this.loadAppointments(1, this.pageSize);
+  }
+
+  cleanAppointmentFilters(): void {
+    this.filterForm.reset({
+      reason: '',
+      estado: '',
+      startDateFrom: '',
+      startDateTo: '',
+    });
+    this.loadAppointments(1, this.pageSize);
   }
 
   changeExamPagination(event: PageEvent): void {
@@ -466,6 +523,14 @@ export class AppointmentsComponent implements OnInit {
     return appointment.status === 'EN_CURSO';
   }
 
+  canSeeAppointmentResult(appointment: AppointmentDto): boolean {
+    return appointment.status === 'FINALIZADA';
+  }
+
+  verResultadoCita(appointment: AppointmentDto): void {
+    this.router.navigate(['/session/appointments', appointment.id, 'result']);
+  }
+
   canStartExamByStatus(exam: ExamDto): boolean {
     return exam.status === 'ACTIVO' && this.isWithinExamStartWindow(exam);
   }
@@ -520,32 +585,61 @@ export class AppointmentsComponent implements OnInit {
       return;
     }
 
-    const result = await Swal.fire({
-      title: 'Resultado del examen',
-      input: 'textarea',
-      inputPlaceholder: 'Escribe el resultado',
-      inputAttributes: {
-        maxlength: '1000',
+    this.selectedFinishExam = exam;
+    this.allowedExamDiagnoses = [];
+    this.finishExamForm.reset({
+      results: '',
+      diseaseOrInjuryIds: [],
+    });
+
+    this.examTypeDiagnosisService.get({ examTypeId: exam.examTypeId }).subscribe({
+      next: (diagnoses) => {
+        this.allowedExamDiagnoses = diagnoses;
+        this.finishExamDialogRef = this.dialog.open(this.finishExamDialog, {
+          width: '680px',
+          maxWidth: 'calc(100vw - 32px)',
+          autoFocus: false,
+        });
       },
+      error: (err) => {
+        this.error = 'No se pudieron cargar los diagnosticos permitidos para el examen.';
+        console.error(err);
+      },
+    });
+  }
+
+  async saveFinishExam(): Promise<void> {
+    if (!this.selectedFinishExam) {
+      return;
+    }
+
+    if (this.finishExamForm.invalid || this.selectedExamDiagnosisIds.length === 0) {
+      this.finishExamForm.markAllAsTouched();
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: 'Deseas finalizar este examen?',
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Finalizar examen',
       cancelButtonText: 'Cancelar',
-      inputValidator: (value) => {
-        if (!value?.trim()) {
-          return 'El resultado es obligatorio.';
-        }
-        return undefined;
-      },
     });
 
     if (!result.isConfirmed) {
       return;
     }
 
-    this.appointmentsService.finalizarExamen(exam.id, result.value.trim()).subscribe({
+    const payload: FinalizarExamDto = {
+      examId: this.selectedFinishExam.id,
+      results: this.finishExamForm.value.results.trim(),
+      diseaseOrInjuryIds: this.selectedExamDiagnosisIds,
+    };
+
+    this.appointmentsService.finalizarExamen(payload).subscribe({
       next: () => {
         this.success = 'Examen finalizado correctamente.';
+        this.finishExamDialogRef?.close();
         Swal.fire('Examen finalizado', 'El examen fue finalizado correctamente.', 'success');
         this.loadExams(this.examPageNumber, this.examPageSize);
       },
@@ -554,6 +648,12 @@ export class AppointmentsComponent implements OnInit {
         console.error(err);
       },
     });
+  }
+
+  closeFinishExamDialog(): void {
+    this.selectedFinishExam = undefined;
+    this.allowedExamDiagnoses = [];
+    this.finishExamDialogRef?.close();
   }
 
   verHistorialEstados(appointment: AppointmentDto): void {
@@ -642,5 +742,25 @@ export class AppointmentsComponent implements OnInit {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
       date.getDate(),
     )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  private mapAppointmentFilters(): Record<string, string> {
+    const value = this.filterForm.value;
+    return {
+      reason: value.reason?.trim() ?? '',
+      estado: value.estado ?? '',
+      startDateFrom: value.startDateFrom
+        ? new Date(`${value.startDateFrom}T00:00:00`).toISOString()
+        : '',
+      startDateTo: value.startDateTo
+        ? new Date(`${value.startDateTo}T00:00:00`).toISOString()
+        : '',
+    };
+  }
+
+  get selectedExamDiagnosisIds(): number[] {
+    return (this.finishExamForm.value.diseaseOrInjuryIds ?? [])
+      .map((value: number | string) => Number(value))
+      .filter((value: number) => value > 0);
   }
 }

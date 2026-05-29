@@ -1,0 +1,110 @@
+.dosages-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.page-header,
+.actions,
+.card-actions,
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.page-header {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-header h1,
+.dosage-form h2 {
+  margin: 0;
+}
+
+.filters {
+  align-items: start;
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  padding: 1rem;
+}
+
+.dosage-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.dosage-card {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.dosage-card header {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.dosage-card header span,
+.amounts span,
+.dosage-card p {
+  color: #64748b;
+}
+
+.amounts {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.amounts div {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+}
+
+.amounts strong {
+  font-size: 1.2rem;
+}
+
+.card-actions,
+.dialog-actions,
+.actions {
+  justify-content: flex-end;
+}
+
+.dosage-form {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0;
+}
+
+.dosage-form mat-dialog-content {
+  max-height: min(70vh, 620px);
+  padding: 0 0.25rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-error {
+  color: #b42318;
+  margin: 0.25rem 0 0;
+}

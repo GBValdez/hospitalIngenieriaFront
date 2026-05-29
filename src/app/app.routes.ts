@@ -132,8 +132,18 @@ export const routes: Routes = [
           import('@appointments/pages/appointments/appointments.component').then(
             (m) => m.AppointmentsComponent,
           ),
-        data: { isProtect: 20, roles: ['userNormal', 'NURSE', 'ADMINISTRATOR'] },
+        data: { isProtect: 20, roles: ['userNormal', 'DOCTOR', 'NURSE', 'ADMINISTRATOR', 'LAB_ATTENDANT'] },
         canActivate: [AuthGuard],
+      },
+      {
+        path: 'appointments/:id/result',
+        loadComponent: () =>
+          import(
+            '@appointments/pages/appointment-result/appointment-result.component'
+          ).then((m) => m.AppointmentResultComponent),
+        data: { isProtect: 20, roles: ['userNormal', 'DOCTOR', 'NURSE', 'ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Resultado de cita',
       },
       {
         path: 'doctors',
@@ -174,6 +184,36 @@ export const routes: Routes = [
         data: { isProtect: 20, roles: ['PHARMACY_ATTENDANT', 'ADMINISTRATOR'] },
         canActivate: [AuthGuard],
         title: 'Inventario',
+      },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./reports/pages/reports/reports.component').then(
+            (m) => m.ReportsComponent,
+          ),
+        data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Reportería',
+      },
+      {
+        path: 'medicine-dosages',
+        loadComponent: () =>
+          import(
+            './medicine-dosages/pages/medicine-dosages/medicine-dosages.component'
+          ).then((m) => m.MedicineDosagesComponent),
+        data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Dosis por diagnostico',
+      },
+      {
+        path: 'exam-type-diagnoses',
+        loadComponent: () =>
+          import(
+            './exam-type-diagnoses/pages/exam-type-diagnoses/exam-type-diagnoses.component'
+          ).then((m) => m.ExamTypeDiagnosesComponent),
+        data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Diagnosticos por tipo de examen',
       },
       ...CATALOGUE_ROUTE,
     ],

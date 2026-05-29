@@ -74,6 +74,7 @@ export class DespacharMedicinaComponent implements OnInit {
   ) {
     this.searchForm = this.fb.group({
       appointmentId: ['', [Validators.required, Validators.min(1)]],
+      dpi: ['', [Validators.required, Validators.minLength(13), Validators.maxLength(13)]],
     });
     this.dispatchForm = this.fb.group({
       medicines: this.fb.array([]),
@@ -161,17 +162,15 @@ export class DespacharMedicinaComponent implements OnInit {
     this.error = '';
     this.recipe = undefined;
     this.medicinesArray.clear();
-    this.service.getRecipe(Number(this.searchForm.value.appointmentId)).subscribe({
+    this.service.getRecipe(
+      Number(this.searchForm.value.appointmentId),
+      this.searchForm.value.dpi,
+    ).subscribe({
       next: (recipe) => {
         this.recipe = recipe;
         recipe.medicines.forEach((medicine) => {
           const maxDispatch = Math.min(medicine.pendingAmount, medicine.availableStock);
-          this.medicinesArray.push(
-            this.fb.group({
-              selected: [maxDispatch > 0],
-              amount: [maxDispatch, [Validators.required, Validators.min(1)]],
-            }),
-          );
+          this.medicinesArray.push(this.createDispatchMedicineGroup(maxDispatch));
         });
         this.loadingRecipe = false;
       },
@@ -208,7 +207,7 @@ export class DespacharMedicinaComponent implements OnInit {
 
     const invalid = items.find((item) => item.amount <= 0 || item.amount > item.pendingAmount || item.amount > item.availableStock);
     if (invalid) {
-      this.error = `Cantidad invalida para ${invalid.medicineName}.`;
+      this.error = `Cantidad invalida para ${invalid.medicineName}. No puede superar lo pendiente ni el stock disponible.`;
       return;
     }
 
@@ -227,6 +226,7 @@ export class DespacharMedicinaComponent implements OnInit {
 
     const payload: DispatchPayloadDto = {
       appointmentId: this.recipe.appointmentId,
+      dpi: this.searchForm.value.dpi,
       items: items.map((item) => ({ recipeId: item.recipeId, amount: item.amount })),
     };
 
@@ -324,7 +324,61 @@ export class DespacharMedicinaComponent implements OnInit {
     return this.medicinesArray.at(index)?.get('amount') ?? null;
   }
 
+  selectedControl(index: number): AbstractControl | null {
+    return this.medicinesArray.at(index)?.get('selected') ?? null;
+  }
+
+  isMedicineSelected(index: number): boolean {
+    return this.selectedControl(index)?.value === true;
+  }
+
   closeEntryDialog(): void {
     this.dialogRef?.close();
+  }
+
+  private createDispatchMedicineGroup(maxDispatch: number): FormGroup {
+    const canDispatch = maxDispatch > 0;
+    const group = this.fb.group({
+      selected: [{ value: canDispatch, disabled: !canDispatch }],
+      amount: [{ value: canDispatch ? maxDispatch : 0, disabled: !canDispatch }],
+    });
+
+    this.syncAmountValidators(group, maxDispatch);
+    group.get('selected')?.valueChanges.subscribe((selected) => {
+      this.syncAmountValidators(group, maxDispatch, selected === true);
+    });
+
+    return group;
+  }
+
+  private syncAmountValidators(
+    group: FormGroup,
+    maxDispatch: number,
+    selected = group.get('selected')?.value === true,
+  ): void {
+    const amount = group.get('amount');
+    if (!amount) {
+      return;
+    }
+
+    if (!selected) {
+      amount.clearValidators();
+      amount.disable({ emitEvent: false });
+      amount.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    amount.enable({ emitEvent: false });
+    amount.setValidators([
+      Validators.required,
+      Validators.min(1),
+      Validators.max(maxDispatch),
+    ]);
+
+    if (Number(amount.value || 0) <= 0) {
+      amount.setValue(maxDispatch, { emitEvent: false });
+    }
+
+    amount.updateValueAndValidity({ emitEvent: false });
   }
 }

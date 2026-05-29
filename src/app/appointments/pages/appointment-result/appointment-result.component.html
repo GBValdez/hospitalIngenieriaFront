@@ -1,0 +1,77 @@
+<section class="result-page">
+  <header class="page-header">
+    <div>
+      <h1>Resultado de cita</h1>
+      <p *ngIf="result">Cita #{{ result.appointmentId }}</p>
+    </div>
+    <button type="button" class="secondary" (click)="goBack()">Volver</button>
+  </header>
+
+  <p *ngIf="loading">Cargando resultado...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <ng-container *ngIf="result">
+    <section class="summary">
+      <div>
+        <span>Motivo</span>
+        <strong>{{ result.reason }}</strong>
+      </div>
+      <div>
+        <span>Paciente</span>
+        <strong>{{ result.patientName || "Sin paciente" }}</strong>
+      </div>
+      <div>
+        <span>Doctor</span>
+        <strong>{{ result.doctorName || "Sin doctor" }}</strong>
+      </div>
+      <div>
+        <span>Fecha</span>
+        <strong>{{ result.startDate | date: "medium" }}</strong>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Diagnosticos</h2>
+      <div class="chips" *ngIf="result.diseasesOrInjuries.length > 0; else noDiagnoses">
+        <span *ngFor="let item of result.diseasesOrInjuries">{{ item }}</span>
+      </div>
+      <ng-template #noDiagnoses>
+        <p>No hay diagnosticos registrados.</p>
+      </ng-template>
+    </section>
+
+    <section class="panel">
+      <h2>Observaciones</h2>
+      <p>{{ result.observations || "Sin observaciones." }}</p>
+    </section>
+
+    <section class="panel">
+      <h2>Receta</h2>
+      <p *ngIf="result.recipes.length === 0">No se recetaron medicamentos.</p>
+      <article *ngFor="let recipe of result.recipes" class="detail-card">
+        <header>
+          <strong>{{ recipe.medicineName }}</strong>
+          <span>Total: {{ recipe.totalAmount }} unidades</span>
+        </header>
+        <p>{{ recipe.days }} dias, cada {{ recipe.timeLimit }} horas.</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Examenes</h2>
+      <p *ngIf="result.exams.length === 0">No se solicitaron examenes.</p>
+      <article *ngFor="let exam of result.exams" class="detail-card">
+        <header>
+          <strong>{{ exam.examTypeName }}</strong>
+          <span>{{ exam.startDate | date: "medium" }}</span>
+        </header>
+        <p><strong>Indicaciones:</strong> {{ exam.indications || "Sin indicaciones." }}</p>
+        <p><strong>Resultado:</strong> {{ exam.results || "Pendiente." }}</p>
+        <p *ngIf="exam.diseasesOrInjuries?.length">
+          <strong>Diagnosticos:</strong> {{ exam.diseasesOrInjuries.join(", ") }}
+        </p>
+        <p *ngIf="exam.attendantName"><strong>Encargado:</strong> {{ exam.attendantName }}</p>
+      </article>
+    </section>
+  </ng-container>
+</section>

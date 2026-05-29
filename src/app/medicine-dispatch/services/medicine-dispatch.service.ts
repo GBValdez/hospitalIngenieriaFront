@@ -18,8 +18,10 @@ export class MedicineDispatchService {
 
   constructor(private http: HttpClient) {}
 
-  getRecipe(appointmentId: number): Observable<DispatchRecipeDto> {
-    return this.http.get<DispatchRecipeDto>(`${this.url}/receta/${appointmentId}`);
+  getRecipe(appointmentId: number, dpi: string): Observable<DispatchRecipeDto> {
+    return this.http.get<DispatchRecipeDto>(`${this.url}/receta/${appointmentId}`, {
+      params: { dpi },
+    });
   }
 
   dispatch(payload: DispatchPayloadDto): Observable<void> {

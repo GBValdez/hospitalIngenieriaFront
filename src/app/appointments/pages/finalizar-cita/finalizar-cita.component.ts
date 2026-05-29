@@ -14,9 +14,13 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { catalogueInterface } from '@utils/commons.interface';
 import { OnlyNumberInputDirective } from '@utils/directivas/only-number-input.directive';
 import { CatalogueService } from '@utils/modules/catalogues/services/catalogue.service';
+import { MedicineDosageDto } from 'src/app/medicine-dosages/interfaces/medicine-dosage.interface';
+import { MedicineDosageService } from 'src/app/medicine-dosages/services/medicine-dosage.service';
 import {
   AppointmentDto,
   FinalizarCitaDto,
@@ -31,6 +35,8 @@ import Swal from 'sweetalert2';
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
+    MatFormFieldModule,
+    MatSelectModule,
     OnlyNumberInputDirective,
   ],
   templateUrl: './finalizar-cita.component.html',
@@ -39,6 +45,9 @@ import Swal from 'sweetalert2';
 export class FinalizarCitaComponent implements OnInit {
   form: FormGroup;
   medicines: catalogueInterface[] = [];
+  diseasesOrInjuries: catalogueInterface[] = [];
+  allowedDosages: MedicineDosageDto[] = [];
+  allowedMedicines: catalogueInterface[] = [];
   examTypes: catalogueInterface[] = [];
   saving = false;
   loadingCatalogues = false;
@@ -54,13 +63,13 @@ export class FinalizarCitaComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public appointment: AppointmentDto,
     private appointmentsService: AppointmentsService,
     private catalogueService: CatalogueService,
+    private medicineDosageService: MedicineDosageService,
     private dialogRef: MatDialogRef<FinalizarCitaComponent>,
     private fb: FormBuilder,
   ) {
     this.form = this.fb.group({
-      diagnosis: ['', [Validators.required, Validators.maxLength(500)]],
       observations: ['', [Validators.maxLength(500)]],
-      treatment: ['', [Validators.required, Validators.maxLength(500)]],
+      diseaseOrInjuryIds: [[], [Validators.required]],
       requiresRecipe: [false],
       recipes: this.fb.array([]),
       requiresLabExams: [false],
@@ -80,6 +89,11 @@ export class FinalizarCitaComponent implements OnInit {
       if (!value) {
         this.recipes.clear();
       }
+    });
+
+    this.form.get('diseaseOrInjuryIds')?.valueChanges.subscribe((value) => {
+      const ids = Array.isArray(value) ? value : [];
+      this.loadAllowedMedicines(ids.map((id: unknown) => Number(id)));
     });
 
     this.form.get('requiresLabExams')?.valueChanges.subscribe((value) => {
@@ -147,6 +161,55 @@ export class FinalizarCitaComponent implements OnInit {
     this.labExams.removeAt(index);
   }
 
+  getDosageInfo(medicineId: unknown): string {
+    const id = Number(medicineId);
+    if (!id) {
+      return '';
+    }
+
+    const rules = this.allowedDosages.filter((dosage) => dosage.medicineId === id);
+    if (rules.length === 0) {
+      return '';
+    }
+
+    const recommended = Math.min(...rules.map((rule) => rule.recommendedAmount));
+    const maximum = Math.min(...rules.map((rule) => rule.maximumAmount));
+    const diagnoses = rules.map((rule) => rule.diseaseOrInjuryName).join(', ');
+    return `Recomendado: ${recommended}. Maximo permitido aplicado: ${maximum}. Diagnosticos: ${diagnoses}.`;
+  }
+
+  getRecipeTotal(index: number): number {
+    const recipe = this.recipes.at(index);
+    const days = Number(recipe.get('days')?.value || 0);
+    const timeLimit = Number(recipe.get('timeLimit')?.value || 0);
+
+    if (days <= 0 || timeLimit <= 0) {
+      return 0;
+    }
+
+    return days * Math.ceil(24 / timeLimit);
+  }
+
+  getRecipeMaximum(medicineId: unknown): number {
+    const id = Number(medicineId);
+    if (!id) {
+      return 0;
+    }
+
+    const rules = this.allowedDosages.filter((dosage) => dosage.medicineId === id);
+    if (rules.length === 0) {
+      return 0;
+    }
+
+    return Math.min(...rules.map((rule) => rule.maximumAmount));
+  }
+
+  exceedsRecipeMaximum(index: number): boolean {
+    const medicineId = this.recipes.at(index).get('medicineId')?.value;
+    const maximum = this.getRecipeMaximum(medicineId);
+    return maximum > 0 && this.getRecipeTotal(index) > maximum;
+  }
+
   async guardar(): Promise<void> {
     this.error = '';
 
@@ -173,9 +236,8 @@ export class FinalizarCitaComponent implements OnInit {
     const requiresReschedule = Boolean(this.form.value.requiresReschedule);
     const payload: FinalizarCitaDto = {
       appointmentId: this.appointment.id,
-      diagnosis: this.form.value.diagnosis.trim(),
       observations: this.form.value.observations?.trim() || undefined,
-      treatment: this.form.value.treatment.trim(),
+      diseaseOrInjuryIds: this.form.value.diseaseOrInjuryIds.map((id: unknown) => Number(id)),
       requiresRecipe,
       recipes: requiresRecipe
         ? this.recipes.value.map((recipe: any) => ({
@@ -240,6 +302,49 @@ export class FinalizarCitaComponent implements OnInit {
     this.catalogueService.get('examtypes', 1, 100, {}, true).subscribe({
       next: (res) => {
         this.examTypes = res.items;
+      },
+      error: (err) => console.error(err),
+    });
+
+    this.catalogueService.get('diseaseorinjuries', 1, 100, {}, true).subscribe({
+      next: (res) => {
+        this.diseasesOrInjuries = res.items;
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  private loadAllowedMedicines(diseaseOrInjuryIds: number[]): void {
+    if (diseaseOrInjuryIds.length === 0) {
+      this.allowedDosages = [];
+      this.allowedMedicines = [];
+      return;
+    }
+
+    this.medicineDosageService.getByDiseases(diseaseOrInjuryIds).subscribe({
+      next: (dosages) => {
+        this.allowedDosages = dosages;
+        const medicineById = new Map<number, catalogueInterface>();
+        dosages.forEach((dosage) => {
+          if (!medicineById.has(dosage.medicineId)) {
+            medicineById.set(dosage.medicineId, {
+              id: dosage.medicineId,
+              name: dosage.medicineName,
+              description: '',
+            });
+          }
+        });
+        this.allowedMedicines = Array.from(medicineById.values()).sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+
+        const allowedIds = new Set(this.allowedMedicines.map((medicine) => medicine.id));
+        this.recipes.controls.forEach((control) => {
+          const currentId = control.get('medicineId')?.value;
+          if (currentId && !allowedIds.has(Number(currentId))) {
+            control.get('medicineId')?.reset(null);
+          }
+        });
       },
       error: (err) => console.error(err),
     });

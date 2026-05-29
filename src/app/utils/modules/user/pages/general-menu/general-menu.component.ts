@@ -42,7 +42,9 @@ export class GeneralMenuComponent implements OnInit {
         click: '/session/appointments',
         show:
           res?.roles.includes('userNormal') ||
+          res?.roles.includes('DOCTOR') ||
           res?.roles.includes('NURSE') ||
+          res?.roles.includes('LAB_ATTENDANT') ||
           res?.roles.includes('ADMINISTRATOR'),
       },
       {
@@ -65,6 +67,12 @@ export class GeneralMenuComponent implements OnInit {
             show: true,
           },
           {
+            text: 'Reportería',
+            icon: 'analytics',
+            click: '/session/reports',
+            show: true,
+          },
+          {
             text: 'Doctores',
             icon: 'medical_services',
             click: '/session/doctors',
@@ -83,9 +91,15 @@ export class GeneralMenuComponent implements OnInit {
             show: true,
           },
           {
-            text: 'Repartidores',
-            icon: 'people',
-            click: '/session/driver-home',
+            text: 'Dosis por diagnostico',
+            icon: 'medication_liquid',
+            click: '/session/medicine-dosages',
+            show: true,
+          },
+          {
+            text: 'Diagnosticos por examen',
+            icon: 'biotech',
+            click: '/session/exam-type-diagnoses',
             show: true,
           },
           {

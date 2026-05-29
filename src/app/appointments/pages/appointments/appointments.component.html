@@ -32,6 +32,42 @@
   </div>
 
   <section *ngIf="activeTab === 'appointments'" class="tab-panel">
+    <form class="filters" [formGroup]="filterForm" (ngSubmit)="searchAppointments()">
+      <label>
+        Motivo
+        <input type="text" formControlName="reason" />
+      </label>
+
+      <label>
+        Estado
+        <select formControlName="estado">
+          <option value="">Todos</option>
+          <option value="ACTIVO">Activo</option>
+          <option value="EN_CURSO">En curso</option>
+          <option value="FINALIZADA">Finalizada</option>
+          <option value="REAGENDAR">Reagendar</option>
+          <option value="CANCELAR">Cancelada</option>
+        </select>
+      </label>
+
+      <label>
+        Desde
+        <input type="date" formControlName="startDateFrom" />
+      </label>
+
+      <label>
+        Hasta
+        <input type="date" formControlName="startDateTo" />
+      </label>
+
+      <div class="filter-actions">
+        <button type="button" class="secondary" (click)="cleanAppointmentFilters()">
+          Limpiar
+        </button>
+        <button type="submit">Buscar</button>
+      </div>
+    </form>
+
     <p *ngIf="!loading && appointments.length === 0">No hay citas disponibles.</p>
 
     <div *ngFor="let appointment of appointments" class="appointment-card">
@@ -62,43 +98,66 @@
       </div>
 
       <div class="actions">
-        <button
-          *ngIf="canStartAppointment"
-          type="button"
-          (click)="abrirInicioCita(appointment)"
-          [disabled]="
-            !canStartAppointmentByStatus(appointment) ||
-            !isWithinStartWindow(appointment)
-          "
-        >
-          Inicio cita
+        <button type="button" [matMenuTriggerFor]="appointmentMenu">
+          <mat-icon>more_vert</mat-icon>
+          Opciones
         </button>
-        <button type="button" (click)="verHistorialEstados(appointment)">
-          Historial
-        </button>
-        <button
-          *ngIf="canFinishAppointment"
-          type="button"
-          (click)="finalizarCita(appointment)"
-          [disabled]="!canFinishAppointmentByStatus(appointment)"
-        >
-          Finalizar consulta
-        </button>
-        <button
-          type="button"
-          (click)="reagendarCita(appointment)"
-          [disabled]="appointment.status !== 'ACTIVO'"
-        >
-          Reagendar
-        </button>
-        <button
-          type="button"
-          class="secondary"
-          (click)="cancelarCita(appointment)"
-          [disabled]="!canCancelAppointment(appointment)"
-        >
-          Cancelar
-        </button>
+        <mat-menu #appointmentMenu="matMenu">
+          <button
+            *ngIf="canStartAppointment"
+            mat-menu-item
+            type="button"
+            (click)="abrirInicioCita(appointment)"
+            [disabled]="
+              !canStartAppointmentByStatus(appointment) ||
+              !isWithinStartWindow(appointment)
+            "
+          >
+            <mat-icon>play_arrow</mat-icon>
+            <span>Inicio cita</span>
+          </button>
+          <button mat-menu-item type="button" (click)="verHistorialEstados(appointment)">
+            <mat-icon>history</mat-icon>
+            <span>Historial</span>
+          </button>
+          <button
+            *ngIf="canSeeAppointmentResult(appointment)"
+            mat-menu-item
+            type="button"
+            (click)="verResultadoCita(appointment)"
+          >
+            <mat-icon>assignment</mat-icon>
+            <span>Ver resultado</span>
+          </button>
+          <button
+            *ngIf="canFinishAppointment"
+            mat-menu-item
+            type="button"
+            (click)="finalizarCita(appointment)"
+            [disabled]="!canFinishAppointmentByStatus(appointment)"
+          >
+            <mat-icon>check_circle</mat-icon>
+            <span>Finalizar consulta</span>
+          </button>
+          <button
+            mat-menu-item
+            type="button"
+            (click)="reagendarCita(appointment)"
+            [disabled]="appointment.status !== 'ACTIVO'"
+          >
+            <mat-icon>event_repeat</mat-icon>
+            <span>Reagendar</span>
+          </button>
+          <button
+            mat-menu-item
+            type="button"
+            (click)="cancelarCita(appointment)"
+            [disabled]="!canCancelAppointment(appointment)"
+          >
+            <mat-icon>cancel</mat-icon>
+            <span>Cancelar</span>
+          </button>
+        </mat-menu>
       </div>
     </div>
 
@@ -149,6 +208,10 @@
       <div class="detail-row">
         <span>Resultado:</span>
         <span>{{ exam.results || "Pendiente" }}</span>
+      </div>
+      <div class="detail-row" *ngIf="exam.diseasesOrInjuries?.length">
+        <span>Diagnosticos:</span>
+        <span>{{ exam.diseasesOrInjuries.join(", ") }}</span>
       </div>
 
       <div class="actions">
@@ -263,6 +326,57 @@
         {{ saving ? "Agendando..." : "Agendar" }}
       </button>
       <button type="button" class="secondary" (click)="cancelarAgendamiento()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #finishExamDialog>
+  <form class="appointment-form" [formGroup]="finishExamForm" (ngSubmit)="saveFinishExam()">
+    <h2>Finalizar examen</h2>
+
+    <p *ngIf="selectedFinishExam">
+      {{ selectedFinishExam.examTypeName }} - {{ selectedFinishExam.patientName }}
+    </p>
+
+    <mat-form-field>
+      <mat-label>Diagnosticos</mat-label>
+      <mat-select formControlName="diseaseOrInjuryIds" multiple>
+        @for (diagnosis of allowedExamDiagnoses; track diagnosis.id) {
+          <mat-option [value]="diagnosis.diseaseOrInjuryId">
+            {{ diagnosis.diseaseOrInjuryName }}
+          </mat-option>
+        }
+      </mat-select>
+      <mat-error *ngIf="finishExamForm.get('diseaseOrInjuryIds')?.touched && selectedExamDiagnosisIds.length === 0">
+        Selecciona al menos un diagnostico.
+      </mat-error>
+    </mat-form-field>
+
+    <p *ngIf="allowedExamDiagnoses.length === 0" class="field-error">
+      Este tipo de examen no tiene diagnosticos configurados.
+    </p>
+
+    <mat-form-field>
+      <mat-label>Resultado</mat-label>
+      <textarea matInput formControlName="results" rows="5" maxlength="1000"></textarea>
+      <mat-error *ngIf="finishExamForm.get('results')?.hasError('required')">
+        El resultado es obligatorio.
+      </mat-error>
+      <mat-error *ngIf="finishExamForm.get('results')?.hasError('maxlength')">
+        Maximo 1000 caracteres.
+      </mat-error>
+    </mat-form-field>
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        [disabled]="finishExamForm.invalid || selectedExamDiagnosisIds.length === 0"
+      >
+        Finalizar examen
+      </button>
+      <button type="button" class="secondary" (click)="closeFinishExamDialog()">
         Cancelar
       </button>
     </div>

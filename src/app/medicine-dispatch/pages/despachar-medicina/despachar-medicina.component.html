@@ -65,8 +65,12 @@
       <section class="view-stack tab-content">
         <form class="tool-panel search-panel" [formGroup]="searchForm" (ngSubmit)="searchRecipe()">
           <mat-form-field>
-            <mat-label>No. de cita / receta</mat-label>
+            <mat-label>No. de cita</mat-label>
             <input matInput type="text" formControlName="appointmentId" appOnlyNumberInput />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>DPI del paciente</mat-label>
+            <input matInput type="text" formControlName="dpi" maxlength="13" appOnlyNumberInput />
           </mat-form-field>
           <button mat-raised-button color="primary" type="submit" [disabled]="loadingRecipe">
             {{ loadingRecipe ? "Buscando..." : "Buscar receta" }}
@@ -78,6 +82,10 @@
             <div>
               <strong>{{ recipe.patientName }}</strong>
               <span>Paciente</span>
+            </div>
+            <div>
+              <strong>{{ recipe.patientDpi }}</strong>
+              <span>DPI</span>
             </div>
             <div>
               <strong>{{ recipe.doctorName }}</strong>
@@ -106,7 +114,15 @@
                 <mat-form-field>
                   <mat-label>Cantidad</mat-label>
                   <input matInput type="text" formControlName="amount" appOnlyNumberInput />
-                  <mat-error *ngIf="amountControl(i)?.invalid">Cantidad invalida</mat-error>
+                  <mat-error *ngIf="isMedicineSelected(i) && amountControl(i)?.hasError('required')">
+                    La cantidad es obligatoria.
+                  </mat-error>
+                  <mat-error *ngIf="isMedicineSelected(i) && amountControl(i)?.hasError('min')">
+                    Debe ser mayor a cero.
+                  </mat-error>
+                  <mat-error *ngIf="isMedicineSelected(i) && amountControl(i)?.hasError('max')">
+                    No puede superar {{ medicine.pendingAmount < medicine.availableStock ? medicine.pendingAmount : medicine.availableStock }}.
+                  </mat-error>
                 </mat-form-field>
                 <strong>
                   Q{{ ((amountControl(i)?.value || 0) * medicine.price) | number: "1.2-2" }}

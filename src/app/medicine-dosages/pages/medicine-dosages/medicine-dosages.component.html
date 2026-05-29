@@ -1,0 +1,147 @@
+<section class="dosages-page">
+  <header class="page-header">
+    <h1>Dosis por diagnostico</h1>
+    <button mat-raised-button color="primary" type="button" (click)="openCreate()">
+      <mat-icon>add</mat-icon>
+      Agregar dosis
+    </button>
+  </header>
+
+  <form class="filters" [formGroup]="filterForm" (ngSubmit)="search()">
+    <mat-form-field>
+      <mat-label>Medicamento</mat-label>
+      <mat-select formControlName="medicineId">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (medicine of medicines; track medicine.id) {
+          <mat-option [value]="medicine.id">{{ medicine.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Enfermedad o lesion</mat-label>
+      <mat-select formControlName="diseaseOrInjuryId">
+        <mat-option [value]="null">Todas</mat-option>
+        @for (item of diseasesOrInjuries; track item.id) {
+          <mat-option [value]="item.id">{{ item.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-raised-button type="button" (click)="cleanFilter()">
+        <mat-icon>backspace</mat-icon>
+        Limpiar
+      </button>
+      <button mat-raised-button color="primary" type="submit">
+        <mat-icon>search</mat-icon>
+        Buscar
+      </button>
+    </div>
+  </form>
+
+  <p *ngIf="loading">Cargando configuraciones...</p>
+  <p *ngIf="!loading && dosages.length === 0">No hay dosis configuradas.</p>
+
+  <section class="dosage-grid">
+    @for (dosage of dosages; track dosage.id) {
+      <article class="dosage-card">
+        <header>
+          <strong>{{ dosage.medicineName }}</strong>
+          <span>{{ dosage.diseaseOrInjuryName }}</span>
+        </header>
+
+        <div class="amounts">
+          <div>
+            <span>Recomendada</span>
+            <strong>{{ dosage.recommendedAmount }}</strong>
+          </div>
+          <div>
+            <span>Maxima</span>
+            <strong>{{ dosage.maximumAmount }}</strong>
+          </div>
+        </div>
+
+        <p *ngIf="dosage.notes">{{ dosage.notes }}</p>
+
+        <div class="card-actions">
+          <button mat-raised-button color="primary" type="button" (click)="openEdit(dosage)">
+            <mat-icon>edit</mat-icon>
+            Editar
+          </button>
+          <button mat-raised-button color="warn" type="button" (click)="deleteDosage(dosage)">
+            <mat-icon>delete</mat-icon>
+            Eliminar
+          </button>
+        </div>
+      </article>
+    }
+  </section>
+</section>
+
+<ng-template #dosageDialog>
+  <form class="dosage-form" [formGroup]="dosageForm" (ngSubmit)="saveDosage()">
+    <h2>{{ selectedDosage ? "Editar dosis" : "Crear dosis" }}</h2>
+
+    <mat-dialog-content>
+      <div class="form-grid">
+        <mat-form-field>
+          <mat-label>Medicamento</mat-label>
+          <mat-select formControlName="medicineId">
+            @for (medicine of medicines; track medicine.id) {
+              <mat-option [value]="medicine.id">{{ medicine.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Enfermedad o lesion</mat-label>
+          <mat-select formControlName="diseaseOrInjuryId">
+            @for (item of diseasesOrInjuries; track item.id) {
+              <mat-option [value]="item.id">{{ item.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Cantidad recomendada</mat-label>
+          <input matInput appOnlyNumberInput formControlName="recommendedAmount" />
+          <mat-error *ngIf="recommendedAmountControl?.hasError('min')">
+            Debe ser mayor a cero.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Cantidad maxima</mat-label>
+          <input matInput appOnlyNumberInput formControlName="maximumAmount" />
+          <mat-error *ngIf="maximumAmountControl?.hasError('min')">
+            Debe ser mayor a cero.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Notas</mat-label>
+          <textarea matInput formControlName="notes" rows="3"></textarea>
+          <mat-error *ngIf="dosageForm.get('notes')?.hasError('maxlength')">
+            Maximo 500 caracteres.
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <p class="form-error" *ngIf="dosageForm.hasError('recommendedGreaterThanMaximum')">
+        La cantidad recomendada no puede ser mayor que la maxima.
+      </p>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="dialog-actions">
+      <button mat-raised-button type="button" (click)="closeDialog()">
+        <mat-icon>close</mat-icon>
+        Cancelar
+      </button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="dosageForm.invalid">
+        <mat-icon>save</mat-icon>
+        Guardar
+      </button>
+    </mat-dialog-actions>
+  </form>
+</ng-template>

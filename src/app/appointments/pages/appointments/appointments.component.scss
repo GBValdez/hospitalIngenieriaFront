@@ -32,8 +32,31 @@
   gap: 0.35rem;
 }
 
+.appointment-form mat-form-field {
+  width: 100%;
+}
+
+.filters {
+  align-items: end;
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  padding: 1rem;
+}
+
+.filters label {
+  display: grid;
+  font-weight: 600;
+  gap: 0.35rem;
+}
+
 .appointment-form input,
-.appointment-form textarea {
+.appointment-form textarea,
+.filters input,
+.filters select {
   border: 1px solid #b8c0cc;
   border-radius: 6px;
   font: inherit;
@@ -41,10 +64,15 @@
 }
 
 .form-actions,
-.actions {
+.actions,
+.filter-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.filter-actions {
+  justify-content: flex-end;
 }
 
 .tabs {
@@ -78,12 +106,15 @@
 }
 
 button {
+  align-items: center;
   background: #1d4ed8;
   border: 0;
   border-radius: 6px;
   color: white;
   cursor: pointer;
+  display: inline-flex;
   font: inherit;
+  gap: 0.35rem;
   padding: 0.55rem 0.85rem;
 }
 

@@ -1,0 +1,88 @@
+.result-page {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.page-header,
+.detail-card header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.page-header h1,
+.page-header p,
+.panel h2,
+.detail-card p {
+  margin: 0;
+}
+
+.summary {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.summary div,
+.panel,
+.detail-card {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.summary div,
+.panel,
+.detail-card {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.summary span,
+.detail-card header span {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chips span {
+  background: #eef2f7;
+  border-radius: 999px;
+  color: #152033;
+  padding: 0.35rem 0.65rem;
+}
+
+button {
+  background: #1d4ed8;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.55rem 0.85rem;
+}
+
+button.secondary {
+  background: #eef2f7;
+  color: #152033;
+}
+
+.error {
+  color: #b42318;
+}
+
+@media (max-width: 700px) {
+  .page-header,
+  .detail-card header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

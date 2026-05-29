@@ -11,27 +11,22 @@
 
     <p *ngIf="error" class="error">{{ error }}</p>
 
-    <label>
-      Diagnostico
-      <textarea formControlName="diagnosis" rows="3" maxlength="500"></textarea>
-    </label>
-    <p
-      *ngIf="getControl('diagnosis')?.touched && getControl('diagnosis')?.invalid"
-      class="field-error"
-    >
-      El diagnostico es obligatorio y no puede superar 500 caracteres.
-    </p>
-
-    <label>
-      Tratamiento
-      <textarea formControlName="treatment" rows="3" maxlength="500"></textarea>
-    </label>
-    <p
-      *ngIf="getControl('treatment')?.touched && getControl('treatment')?.invalid"
-      class="field-error"
-    >
-      El tratamiento es obligatorio y no puede superar 500 caracteres.
-    </p>
+    <section class="block">
+      <mat-form-field appearance="outline">
+        <mat-label>Enfermedades o lesiones diagnosticadas</mat-label>
+        <mat-select formControlName="diseaseOrInjuryIds" multiple>
+          <mat-option *ngFor="let item of diseasesOrInjuries" [value]="item.id">
+            {{ item.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <p
+        *ngIf="getControl('diseaseOrInjuryIds')?.touched && getControl('diseaseOrInjuryIds')?.invalid"
+        class="field-error"
+      >
+        Seleccione al menos una enfermedad o lesion diagnosticada.
+      </p>
+    </section>
 
     <label>
       Observaciones
@@ -49,6 +44,15 @@
       Requiere receta medica
     </label>
 
+    <section *ngIf="form.value.requiresRecipe" class="block">
+      <p
+        *ngIf="getControl('diseaseOrInjuryIds')?.value?.length && allowedMedicines.length === 0"
+        class="field-error"
+      >
+        No hay medicamentos configurados para los diagnosticos seleccionados.
+      </p>
+    </section>
+
     <section *ngIf="form.value.requiresRecipe" formArrayName="recipes" class="block">
       <div
         *ngFor="let recipe of recipes.controls; let i = index"
@@ -59,11 +63,14 @@
           Medicamento
           <select formControlName="medicineId">
             <option [ngValue]="null">Seleccione</option>
-            <option *ngFor="let medicine of medicines" [ngValue]="medicine.id">
+            <option *ngFor="let medicine of allowedMedicines" [ngValue]="medicine.id">
               {{ medicine.name }}
             </option>
           </select>
         </label>
+        <p *ngIf="getDosageInfo(recipe.get('medicineId')?.value)" class="dosage-info">
+          {{ getDosageInfo(recipe.get('medicineId')?.value) }}
+        </p>
         <p *ngIf="medicineCatalogError" class="field-error">
           {{ medicineCatalogError }}
         </p>
@@ -75,6 +82,15 @@
           Plazo entre dosis
           <input type="text" formControlName="timeLimit" appOnlyNumberInput />
         </label>
+        <p
+          class="consumption-info"
+          [class.field-error]="exceedsRecipeMaximum(i)"
+        >
+          Total a consumir: {{ getRecipeTotal(i) }} unidades
+          <span *ngIf="getRecipeMaximum(recipe.get('medicineId')?.value)">
+            / maximo permitido: {{ getRecipeMaximum(recipe.get('medicineId')?.value) }}
+          </span>
+        </p>
         <button type="button" class="secondary icon-action" (click)="removeRecipe(i)">
           Quitar
         </button>

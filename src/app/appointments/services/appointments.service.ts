@@ -5,9 +5,11 @@ import {
   AppointmentAvailabilityDto,
   AppointmentDto,
   AppointmentCreationDto,
+  AppointmentResultDto,
   AppointmentStatusHistoryDto,
   ExamDto,
   ExamStatusHistoryDto,
+  FinalizarExamDto,
   FinalizarCitaDto,
   InicioCitaDto,
   ReagendarDto,
@@ -51,6 +53,10 @@ export class AppointmentsService extends CommonsSvcService<
     );
   }
 
+  getResultadoCita(id: number): Observable<AppointmentResultDto> {
+    return this.http.get<AppointmentResultDto>(`${this.urlBase}/${id}/resultado`);
+  }
+
   getExamenes(opts?: pagOptions<object>): Observable<pagDto<ExamDto>> {
     const params = fixedQueryParams({
       ...(opts?.query ?? {}),
@@ -70,11 +76,8 @@ export class AppointmentsService extends CommonsSvcService<
     });
   }
 
-  finalizarExamen(examId: number, results: string): Observable<ExamDto> {
-    return this.http.post<ExamDto>(`${environment.api}/api/examenes/finalizar`, {
-      examId,
-      results,
-    });
+  finalizarExamen(body: FinalizarExamDto): Observable<ExamDto> {
+    return this.http.post<ExamDto>(`${environment.api}/api/examenes/finalizar`, body);
   }
 
   getHistorialEstadosExamen(id: number): Observable<ExamStatusHistoryDto[]> {

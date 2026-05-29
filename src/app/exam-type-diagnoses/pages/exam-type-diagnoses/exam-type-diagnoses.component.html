@@ -1,0 +1,116 @@
+<section class="relations-page">
+  <header class="page-header">
+    <h1>Diagnosticos por tipo de examen</h1>
+    <button mat-raised-button color="primary" type="button" (click)="openCreate()">
+      <mat-icon>add</mat-icon>
+      Agregar relacion
+    </button>
+  </header>
+
+  <form class="filters" [formGroup]="filterForm" (ngSubmit)="search()">
+    <mat-form-field>
+      <mat-label>Tipo de examen</mat-label>
+      <mat-select formControlName="examTypeId">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (examType of examTypes; track examType.id) {
+          <mat-option [value]="examType.id">{{ examType.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Enfermedad o lesion</mat-label>
+      <mat-select formControlName="diseaseOrInjuryId">
+        <mat-option [value]="null">Todas</mat-option>
+        @for (item of diseasesOrInjuries; track item.id) {
+          <mat-option [value]="item.id">{{ item.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-raised-button type="button" (click)="cleanFilter()">
+        <mat-icon>backspace</mat-icon>
+        Limpiar
+      </button>
+      <button mat-raised-button color="primary" type="submit">
+        <mat-icon>search</mat-icon>
+        Buscar
+      </button>
+    </div>
+  </form>
+
+  <p *ngIf="loading">Cargando relaciones...</p>
+  <p *ngIf="!loading && relations.length === 0">No hay relaciones configuradas.</p>
+
+  <section class="relation-grid">
+    @for (relation of relations; track relation.id) {
+      <article class="relation-card">
+        <header>
+          <strong>{{ relation.examTypeName }}</strong>
+          <span>{{ relation.diseaseOrInjuryName }}</span>
+        </header>
+
+        <p *ngIf="relation.notes">{{ relation.notes }}</p>
+
+        <div class="card-actions">
+          <button mat-raised-button color="primary" type="button" (click)="openEdit(relation)">
+            <mat-icon>edit</mat-icon>
+            Editar
+          </button>
+          <button mat-raised-button color="warn" type="button" (click)="deleteRelation(relation)">
+            <mat-icon>delete</mat-icon>
+            Eliminar
+          </button>
+        </div>
+      </article>
+    }
+  </section>
+</section>
+
+<ng-template #relationDialog>
+  <form class="relation-form" [formGroup]="relationForm" (ngSubmit)="saveRelation()">
+    <h2>{{ selectedRelation ? "Editar relacion" : "Crear relacion" }}</h2>
+
+    <mat-dialog-content>
+      <div class="form-grid">
+        <mat-form-field>
+          <mat-label>Tipo de examen</mat-label>
+          <mat-select formControlName="examTypeId">
+            @for (examType of examTypes; track examType.id) {
+              <mat-option [value]="examType.id">{{ examType.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Enfermedad o lesion</mat-label>
+          <mat-select formControlName="diseaseOrInjuryId">
+            @for (item of diseasesOrInjuries; track item.id) {
+              <mat-option [value]="item.id">{{ item.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="full-width">
+          <mat-label>Notas</mat-label>
+          <textarea matInput formControlName="notes" rows="3"></textarea>
+          <mat-error *ngIf="relationForm.get('notes')?.hasError('maxlength')">
+            Maximo 500 caracteres.
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="dialog-actions">
+      <button mat-raised-button type="button" (click)="closeDialog()">
+        <mat-icon>close</mat-icon>
+        Cancelar
+      </button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="relationForm.invalid">
+        <mat-icon>save</mat-icon>
+        Guardar
+      </button>
+    </mat-dialog-actions>
+  </form>
+</ng-template>

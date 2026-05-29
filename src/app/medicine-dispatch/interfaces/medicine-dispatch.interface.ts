@@ -3,6 +3,7 @@ export interface DispatchRecipeDto {
   appointmentReason: string;
   patientId: number;
   patientName: string;
+  patientDpi: string;
   doctorId: number;
   doctorName: string;
   appointmentDate: string;
@@ -24,6 +25,7 @@ export interface DispatchRecipeItemDto {
 
 export interface DispatchPayloadDto {
   appointmentId: number;
+  dpi: string;
   items: DispatchPayloadItemDto[];
 }
 

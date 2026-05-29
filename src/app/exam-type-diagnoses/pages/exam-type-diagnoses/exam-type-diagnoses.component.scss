@@ -1,0 +1,76 @@
+.relations-page {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.page-header,
+.filters,
+.actions,
+.card-actions,
+.dialog-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.page-header {
+  justify-content: space-between;
+}
+
+.page-header h1,
+.relation-form h2 {
+  margin: 0;
+}
+
+.filters {
+  align-items: end;
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.filters mat-form-field {
+  min-width: 220px;
+}
+
+.relation-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.relation-card {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.relation-card header {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.relation-card span {
+  color: #475569;
+}
+
+.relation-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}

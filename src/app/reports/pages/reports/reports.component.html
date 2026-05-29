@@ -1,0 +1,143 @@
+<section class="reports-page">
+  <header class="page-header">
+    <div>
+      <h1>Reportería</h1>
+      <span *ngIf="report">
+        {{ report.startDateFrom | date: "mediumDate" }} - {{ report.startDateTo | date: "mediumDate" }}
+      </span>
+    </div>
+  </header>
+
+  <form class="filters" [formGroup]="filterForm" (ngSubmit)="loadReport()">
+    <mat-form-field>
+      <mat-label>Desde</mat-label>
+      <input matInput type="date" formControlName="startDateFrom" />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Hasta</mat-label>
+      <input matInput type="date" formControlName="startDateTo" />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Stock bajo</mat-label>
+      <input matInput type="number" formControlName="lowStockThreshold" />
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-raised-button type="button" (click)="cleanFilters()">
+        <mat-icon>backspace</mat-icon>
+        Limpiar
+      </button>
+      <button mat-raised-button color="primary" type="submit">
+        <mat-icon>search</mat-icon>
+        Generar
+      </button>
+    </div>
+  </form>
+
+  <p *ngIf="loading">Cargando reportería...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <ng-container *ngIf="report && !loading">
+    <section class="kpi-grid">
+      <article class="kpi">
+        <span>Citas</span>
+        <strong>{{ report.totals.appointments }}</strong>
+        <small>{{ report.totals.finalizedAppointments }} finalizadas</small>
+      </article>
+      <article class="kpi">
+        <span>Exámenes</span>
+        <strong>{{ report.totals.exams }}</strong>
+        <small>{{ report.totals.finalizedExams }} finalizados</small>
+      </article>
+      <article class="kpi">
+        <span>Recetas</span>
+        <strong>{{ report.totals.recipes }}</strong>
+        <small>{{ report.totals.dispatchedUnits }} unidades despachadas</small>
+      </article>
+      <article class="kpi">
+        <span>Ingresos por despacho</span>
+        <strong>Q{{ report.totals.dispatchRevenue | number: "1.2-2" }}</strong>
+        <small>{{ report.totals.lowStockMedicines }} medicamentos con stock bajo</small>
+      </article>
+    </section>
+
+    <section class="report-grid">
+      <article class="panel">
+        <h2>Citas por estado</h2>
+        <ng-container *ngTemplateOutlet="barList; context: { items: report.appointmentsByStatus }"></ng-container>
+      </article>
+
+      <article class="panel">
+        <h2>Citas por doctor</h2>
+        <ng-container *ngTemplateOutlet="barList; context: { items: report.appointmentsByDoctor }"></ng-container>
+      </article>
+
+      <article class="panel">
+        <h2>Diagnósticos más frecuentes</h2>
+        <ng-container *ngTemplateOutlet="barList; context: { items: report.topDiagnoses }"></ng-container>
+      </article>
+
+      <article class="panel">
+        <h2>Medicamentos más recetados</h2>
+        <ng-container *ngTemplateOutlet="barList; context: { items: report.topPrescribedMedicines }"></ng-container>
+      </article>
+
+      <article class="panel">
+        <h2>Medicamentos más despachados</h2>
+        <ng-container *ngTemplateOutlet="barList; context: { items: report.topDispatchedMedicines }"></ng-container>
+      </article>
+
+      <article class="panel">
+        <h2>Exámenes por estado</h2>
+        <ng-container *ngTemplateOutlet="barList; context: { items: report.examsByStatus }"></ng-container>
+      </article>
+
+      <article class="panel">
+        <h2>Exámenes por tipo</h2>
+        <ng-container *ngTemplateOutlet="barList; context: { items: report.examsByType }"></ng-container>
+      </article>
+
+      <article class="panel">
+        <h2>Inventario bajo</h2>
+        <p *ngIf="report.lowStockMedicines.length === 0">No hay medicamentos por debajo del límite.</p>
+        <table mat-table [dataSource]="report.lowStockMedicines" *ngIf="report.lowStockMedicines.length > 0">
+          <ng-container matColumnDef="medicineName">
+            <th mat-header-cell *matHeaderCellDef>Medicamento</th>
+            <td mat-cell *matCellDef="let item">{{ item.medicineName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="stock">
+            <th mat-header-cell *matHeaderCellDef>Stock</th>
+            <td mat-cell *matCellDef="let item">{{ item.stock }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="price">
+            <th mat-header-cell *matHeaderCellDef>Precio</th>
+            <td mat-cell *matCellDef="let item">Q{{ item.price | number: "1.2-2" }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="lowStockColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: lowStockColumns"></tr>
+        </table>
+      </article>
+    </section>
+  </ng-container>
+</section>
+
+<ng-template #barList let-items="items">
+  <p *ngIf="items.length === 0">Sin datos para el período.</p>
+  <div class="bar-list" *ngIf="items.length > 0">
+    <div class="bar-row" *ngFor="let item of items; trackBy: trackName">
+      <div class="bar-label">
+        <span>{{ item.name }}</span>
+        <strong>{{ item.count }}</strong>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" [style.width.%]="percent(item, items)"></div>
+      </div>
+      <small *ngIf="item.amount">Q{{ item.amount | number: "1.2-2" }}</small>
+    </div>
+  </div>
+</ng-template>

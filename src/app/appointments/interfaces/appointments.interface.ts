@@ -7,9 +7,9 @@ export interface AppointmentDto {
   startDate: string;
   endDate?: string;
   bloodPressure?: string;
-  diagnosis?: string;
   observations?: string;
-  treatment?: string;
+  diseaseOrInjuryIds?: number[];
+  diseasesOrInjuries?: string[];
   temperature?: number;
   heartRate?: number;
   respiratoryRate?: number;
@@ -30,9 +30,7 @@ export interface AppointmentCreationDto {
   startDate: string;
   endDate: string;
   bloodPressure?: string;
-  diagnosis?: string;
   observations?: string;
-  treatment?: string;
   temperature?: number;
   heartRate?: number;
   respiratoryRate?: number;
@@ -85,9 +83,8 @@ export interface FinalizarCitaExamDto {
 
 export interface FinalizarCitaDto {
   appointmentId: number;
-  diagnosis: string;
   observations?: string;
-  treatment: string;
+  diseaseOrInjuryIds: number[];
   requiresRecipe: boolean;
   recipes: FinalizarCitaRecipeDto[];
   requiresLabExams: boolean;
@@ -125,6 +122,13 @@ export interface ExamDto {
   patientId: number;
   patientName: string;
   status: string;
+  diseasesOrInjuries: string[];
+}
+
+export interface FinalizarExamDto {
+  examId: number;
+  results: string;
+  diseaseOrInjuryIds: number[];
 }
 
 export interface ExamStatusHistoryDto {
@@ -136,4 +140,37 @@ export interface ExamStatusHistoryDto {
   changedAt: string;
   changedByUserId?: string;
   changedByUserName?: string;
+}
+
+export interface AppointmentResultDto {
+  appointmentId: number;
+  reason: string;
+  startDate: string;
+  endDate?: string;
+  observations?: string;
+  doctorName?: string;
+  patientName?: string;
+  diseasesOrInjuries: string[];
+  recipes: AppointmentResultRecipeDto[];
+  exams: AppointmentResultExamDto[];
+}
+
+export interface AppointmentResultRecipeDto {
+  id: number;
+  medicineId: number;
+  medicineName: string;
+  days: number;
+  timeLimit: number;
+  totalAmount: number;
+}
+
+export interface AppointmentResultExamDto {
+  id: number;
+  examTypeName: string;
+  startDate: string;
+  endDate: string;
+  indications: string;
+  results: string;
+  attendantName?: string;
+  diseasesOrInjuries: string[];
 }
