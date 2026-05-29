@@ -51,6 +51,15 @@ const CATALOGUE_ROUTE = catalogueData.map((catalogue) =>
 
 export const routes: Routes = [
   {
+    path: '',
+    loadComponent: () =>
+      import('./utils/modules/portal/pages/home/portal-home.component').then(
+        (m) => m.PortalHomeComponent,
+      ),
+    data: { isProtect: 25 },
+    title: 'Portal',
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('@auth/pages/home/home.component').then((m) => m.HomeComponent),
@@ -120,11 +129,21 @@ export const routes: Routes = [
       {
         path: 'appointments',
         loadComponent: () =>
-          import('@appointments/page/appointments/appointments.component.ts').then(
+          import('@appointments/pages/appointments/appointments.component').then(
             (m) => m.AppointmentsComponent,
           ),
         data: { isProtect: 20, roles: ['userNormal'] },
         canActivate: [AuthGuard],
+      },
+      {
+        path: 'doctors',
+        loadComponent: () =>
+          import('./doctors/pages/doctors/doctors.component').then(
+            (m) => m.DoctorsComponent,
+          ),
+        data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Doctores',
       },
       ...CATALOGUE_ROUTE,
     ],

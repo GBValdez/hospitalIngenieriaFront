@@ -25,9 +25,12 @@ mat-icon {
   margin: 3px 0;
   padding: 7px 0;
 }
+.item:hover {
+  background: rgba(59, 130, 246, 0.18);
+}
 .itemSelect {
   color: rgb(255, 255, 255);
-  background: #5c5c5c;
+  background: rgba(37, 99, 235, 0.45);
 }
 
 .iconItem {

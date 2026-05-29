@@ -1,0 +1,225 @@
+<section class="doctors-page">
+  <header class="page-header">
+    <h1>Doctores</h1>
+    <button mat-raised-button color="primary" type="button" (click)="openCreate()">
+      Crear doctor
+    </button>
+  </header>
+
+  <form class="filters" [formGroup]="filterForm" (ngSubmit)="search()">
+    <mat-form-field>
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="name" />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Especialidad</mat-label>
+      <mat-select formControlName="specialtyId">
+        <mat-option [value]="null">Todas</mat-option>
+        @for (specialty of specialtyOptions; track specialty.id) {
+          <mat-option [value]="specialty.id">{{ specialty.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Estado</mat-label>
+      <mat-select formControlName="isActive">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option [value]="true">Activo</mat-option>
+        <mat-option [value]="false">Inactivo</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-raised-button type="button" (click)="cleanFilter()">Limpiar</button>
+      <button mat-raised-button color="primary" type="submit">Buscar</button>
+    </div>
+  </form>
+
+  <p *ngIf="loading">Cargando doctores...</p>
+  <p *ngIf="!loading && doctors.length === 0">No hay doctores registrados.</p>
+
+  <section class="doctor-grid">
+    @for (doctor of doctors; track doctor.id) {
+      <article class="doctor-card">
+        <header>
+          <strong>{{ doctor.name }}</strong>
+          <span [class.inactive]="!doctor.isActive">
+            {{ doctor.isActive ? "Activo" : "Inactivo" }}
+          </span>
+        </header>
+
+        <div class="detail-row">
+          <span>Especialidad:</span>
+          <span>
+            {{
+              doctor.specialtyNames.length
+                ? doctor.specialtyNames.join(", ")
+                : doctor.specialtyName || doctor.specialtyId
+            }}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span>Colegiado:</span>
+          <span>{{ doctor.licenseNumber }}</span>
+        </div>
+        <div class="detail-row">
+          <span>Email:</span>
+          <span>{{ doctor.email }}</span>
+        </div>
+        <div class="detail-row">
+          <span>Telefono:</span>
+          <span>{{ doctor.phoneNumber }}</span>
+        </div>
+
+        <div class="card-actions">
+          <button mat-raised-button color="primary" type="button" (click)="openEdit(doctor)">
+            Editar
+          </button>
+          <button mat-raised-button color="warn" type="button" (click)="deleteDoctor(doctor)">
+            Eliminar
+          </button>
+        </div>
+      </article>
+    }
+  </section>
+
+  <mat-paginator
+    *ngIf="totalDoctors > 0"
+    [length]="totalDoctors"
+    [pageSize]="pageSize"
+    [pageIndex]="pageNumber - 1"
+    [pageSizeOptions]="[5, 10, 15, 20]"
+    (page)="changePagination($event)"
+  ></mat-paginator>
+</section>
+
+<ng-template #doctorDialog>
+  <form class="doctor-form" [formGroup]="doctorForm" (ngSubmit)="saveDoctor()">
+    <h2>{{ selectedDoctor ? "Editar doctor" : "Crear doctor" }}</h2>
+
+    <mat-dialog-content>
+      <div class="form-grid">
+        <mat-form-field>
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>DPI</mat-label>
+          <input matInput formControlName="dpi" maxlength="13" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Direccion</mat-label>
+          <input matInput formControlName="direction" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Fecha de nacimiento</mat-label>
+          <input
+            matInput
+            [matDatepicker]="birthdayPicker"
+            formControlName="birthday"
+            [max]="maxBirthdayDate"
+          />
+          <mat-datepicker-toggle
+            matIconSuffix
+            [for]="birthdayPicker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #birthdayPicker></mat-datepicker>
+          <mat-error *ngIf="birthdayControl?.hasError('underAge')">
+            El doctor debe ser mayor de edad.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Sexo</mat-label>
+          <mat-select formControlName="sexId">
+            @for (sex of sexOptions; track sex.id) {
+              <mat-option [value]="sex.id">{{ sex.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Nacionalidad</mat-label>
+          <mat-select formControlName="nationalityId">
+            @for (nationality of nationalityOptions; track nationality.id) {
+              <mat-option [value]="nationality.id">{{ nationality.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Fecha de contratacion</mat-label>
+          <input
+            matInput
+            [matDatepicker]="hiringDatePicker"
+            formControlName="hiringDate"
+          />
+          <mat-datepicker-toggle
+            matIconSuffix
+            [for]="hiringDatePicker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #hiringDatePicker></mat-datepicker>
+          <mat-error *ngIf="hiringDateControl?.hasError('hiringBeforeAdultAge')">
+            Debe ser al menos 18 anios despues del nacimiento.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Especialidades</mat-label>
+          <mat-select formControlName="specialtyIds" multiple>
+            @for (specialty of specialtyOptions; track specialty.id) {
+              <mat-option [value]="specialty.id">{{ specialty.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Numero de colegiado</mat-label>
+          <input matInput formControlName="licenseNumber" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Telefono</mat-label>
+          <input matInput formControlName="phoneNumber" maxlength="10" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Usuario</mat-label>
+          <input matInput formControlName="userName" />
+        </mat-form-field>
+
+        <mat-form-field *ngIf="!selectedDoctor">
+          <mat-label>Contrasena</mat-label>
+          <input matInput type="password" formControlName="password" />
+          <mat-error *ngIf="passwordControl?.hasError('passwordFormat')">
+            Debe tener mayuscula, minuscula, numero, simbolo y 8 caracteres.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-checkbox formControlName="isActive">Activo</mat-checkbox>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="dialog-actions">
+      <button mat-raised-button type="button" (click)="closeDialog()">Cancelar</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="doctorForm.invalid">
+        Guardar
+      </button>
+    </mat-dialog-actions>
+  </form>
+</ng-template>

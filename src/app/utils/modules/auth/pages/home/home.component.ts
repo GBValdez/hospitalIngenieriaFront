@@ -73,6 +73,7 @@ export class HomeComponent implements OnInit {
               'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'
             ],
           clientId: decoded.clienteId,
+          patientId: decoded.patientId ? Number(decoded.patientId) : undefined,
         };
         console.log(newUser);
         this.authService.setAuth(newUser);

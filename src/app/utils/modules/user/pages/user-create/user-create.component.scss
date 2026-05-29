@@ -1,0 +1,24 @@
+.title {
+  color: #1e40af;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+button.mat-raised-button.mat-primary {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+button.mat-raised-button.mat-primary:hover {
+  background: #1d4ed8 !important;
+}
+
+button.mat-raised-button[color="warn"] {
+  background: #64748b !important;
+  color: #ffffff !important;
+}
+
+button.mat-raised-button[color="warn"]:hover {
+  background: #475569 !important;
+}

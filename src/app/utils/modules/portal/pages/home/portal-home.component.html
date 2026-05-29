@@ -1,0 +1,19 @@
+<section class="portal-page">
+  <div class="portal-card">
+    <h1>Portal de Tipos de Examen</h1>
+    <p>
+      Consulta los tipos de examen disponibles y accede a la opción de agendar
+      tu cita.
+    </p>
+
+    <ul class="specialty-list">
+      <li *ngFor="let examType of examTypes">{{ examType.name }}</li>
+    </ul>
+
+    <div class="portal-actions">
+      <a routerLink="/session/appointments" class="primary-button"
+        >Agendar Cita</a
+      >
+    </div>
+  </div>
+</section>

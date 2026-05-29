@@ -1,0 +1,86 @@
+.doctors-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.page-header,
+.actions,
+.card-actions,
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.page-header {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-header h1,
+.doctor-form h2 {
+  margin: 0;
+}
+
+.filters {
+  align-items: start;
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  padding: 1rem;
+}
+
+.doctor-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.doctor-card {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+}
+
+.doctor-card header,
+.detail-row {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.detail-row span:last-child {
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.inactive {
+  color: #b42318;
+}
+
+.doctor-form {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0;
+}
+
+.doctor-form mat-dialog-content {
+  max-height: min(70vh, 620px);
+  padding: 0 0.25rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.dialog-actions {
+  justify-content: flex-end;
+}

@@ -5,4 +5,5 @@ export interface authUserInterface {
   roles: string[];
   userName: string;
   clientId?: number;
+  patientId?: number;
 }

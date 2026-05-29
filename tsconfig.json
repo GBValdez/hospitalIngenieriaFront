@@ -11,7 +11,7 @@
       "@user/*": ["src/app/utils/modules/user/*"],
       "@catalogues/*": ["src/app/utils/modules/catalogues/*"],
       "@env/*": ["src/environments/*"],
-      "@appointments/*": ["src/app/Appointments"]
+      "@appointments/*": ["src/app/appointments/*"]
     },
     "strict": true,
     "noImplicitOverride": true,

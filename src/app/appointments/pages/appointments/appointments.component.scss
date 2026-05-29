@@ -1,0 +1,95 @@
+.appointments-list {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.appointment-form,
+.appointment-card {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.appointment-form {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 720px;
+}
+
+.appointment-form h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.appointment-form label {
+  display: grid;
+  font-weight: 600;
+  gap: 0.35rem;
+}
+
+.appointment-form input,
+.appointment-form textarea {
+  border: 1px solid #b8c0cc;
+  border-radius: 6px;
+  font: inherit;
+  padding: 0.55rem 0.65rem;
+}
+
+.form-actions,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+button {
+  background: #1d4ed8;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.55rem 0.85rem;
+}
+
+button.secondary {
+  background: #eef2f7;
+  color: #152033;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.appointment-card {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.appointment-card header,
+.detail-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.status {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.error,
+.field-error {
+  color: #b42318;
+}
+
+.field-error {
+  margin: -0.35rem 0 0;
+}
+
+.success {
+  color: #047857;
+}

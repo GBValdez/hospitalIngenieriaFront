@@ -54,6 +54,12 @@ export class GeneralMenuComponent implements OnInit {
             show: true,
           },
           {
+            text: 'Doctores',
+            icon: 'medical_services',
+            click: '/session/doctors',
+            show: true,
+          },
+          {
             text: 'Repartidores',
             icon: 'people',
             click: '/session/driver-home',

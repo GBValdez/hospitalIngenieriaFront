@@ -13,7 +13,7 @@
 nav {
   width: 300px;
   position: fixed;
-  background: rgb(202, 87, 16);
+  background: linear-gradient(180deg, #1d4ed8, #2563eb);
   height: 100vh;
   overflow-y: auto;
 

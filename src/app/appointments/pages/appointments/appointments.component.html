@@ -1,0 +1,136 @@
+<section class="appointments-list">
+  <div class="page-header">
+    <h1>Gestion de citas</h1>
+    <button type="button" (click)="abrirFormularioAgendar()">
+      Agendar cita
+    </button>
+  </div>
+
+  <p *ngIf="loading">Cargando citas...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+  <p *ngIf="success" class="success">{{ success }}</p>
+  <p *ngIf="!loading && appointments.length === 0">
+    No hay citas disponibles.
+  </p>
+
+  <div *ngFor="let appointment of appointments" class="appointment-card">
+    <header>
+      <strong>{{ appointment.reason }}</strong>
+      <span class="status">{{ appointment.status }}</span>
+    </header>
+
+    <div class="detail-row">
+      <span>Inicio:</span>
+      <span>{{ appointment.startDate | date: "medium" }}</span>
+    </div>
+    <div class="detail-row">
+      <span>Fin:</span>
+      <span>{{ appointment.endDate | date: "medium" }}</span>
+    </div>
+    <div class="detail-row">
+      <span>Doctor:</span>
+      <span>{{ appointment.doctorId }}</span>
+    </div>
+    <div class="detail-row">
+      <span>Paciente:</span>
+      <span>{{ appointment.patientId }}</span>
+    </div>
+
+    <div class="actions">
+      <button
+        type="button"
+        (click)="reagendarCita(appointment)"
+        [disabled]="appointment.status !== 'ACTIVO'"
+      >
+        Reagendar
+      </button>
+      <button
+        type="button"
+        class="secondary"
+        (click)="cancelarCita(appointment)"
+        [disabled]="appointment.status !== 'ACTIVO'"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <mat-paginator
+    *ngIf="appointments.length > 0"
+    [length]="totalAppointments"
+    [pageSize]="pageSize"
+    [pageIndex]="pageNumber - 1"
+    [pageSizeOptions]="[5, 10, 15, 20]"
+    (page)="changePagination($event)"
+  ></mat-paginator>
+</section>
+
+<ng-template #appointmentDialog>
+  <form
+    class="appointment-form"
+    [formGroup]="appointmentForm"
+    (ngSubmit)="agendarCita()"
+  >
+    <h2>Agendar cita</h2>
+
+    <label>
+      Fecha y hora
+      <input
+        type="datetime-local"
+        formControlName="startDate"
+        [min]="minDateTime"
+        (blur)="validarDisponibilidad()"
+      />
+    </label>
+    <p
+      *ngIf="startDateControl?.touched && startDateControl?.hasError('required')"
+      class="field-error"
+    >
+      La fecha y hora son obligatorias.
+    </p>
+    <p
+      *ngIf="startDateControl?.touched && startDateControl?.hasError('pastDate')"
+      class="field-error"
+    >
+      La fecha y hora no pueden ser anteriores a la actual.
+    </p>
+
+    <label>
+      Motivo
+      <textarea rows="3" formControlName="reason" maxlength="250"></textarea>
+    </label>
+    <p
+      *ngIf="reasonControl?.touched && reasonControl?.hasError('required')"
+      class="field-error"
+    >
+      El motivo es obligatorio.
+    </p>
+    <p
+      *ngIf="reasonControl?.touched && reasonControl?.hasError('maxlength')"
+      class="field-error"
+    >
+      El motivo no puede superar 250 caracteres.
+    </p>
+
+    <p *ngIf="checkingAvailability">Validando disponibilidad...</p>
+    <p
+      *ngIf="availabilityMessage"
+      [class.error]="!selectedDoctorId"
+      [class.success]="selectedDoctorId"
+    >
+      {{ availabilityMessage }}
+    </p>
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        [disabled]="appointmentForm.invalid || saving || checkingAvailability"
+      >
+        {{ saving ? "Agendando..." : "Agendar" }}
+      </button>
+      <button type="button" class="secondary" (click)="cancelarAgendamiento()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</ng-template>
