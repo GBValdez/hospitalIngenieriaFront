@@ -7,6 +7,8 @@ import {
   AppointmentCreationDto,
   AppointmentResultDto,
   AppointmentStatusHistoryDto,
+  EmergencyAppointmentDto,
+  EmergencyPatientResultDto,
   ExamDto,
   ExamStatusHistoryDto,
   FinalizarExamDto,
@@ -45,6 +47,16 @@ export class AppointmentsService extends CommonsSvcService<
 
   finalizarCita(body: FinalizarCitaDto): Observable<AppointmentDto> {
     return this.http.post<AppointmentDto>(`${this.urlBase}/finalizar`, body);
+  }
+
+  buscarPacienteEmergenciaPorDpi(dpi: string): Observable<EmergencyPatientResultDto> {
+    return this.http.get<EmergencyPatientResultDto>(
+      `${this.urlBase}/paciente-por-dpi/${dpi}`,
+    );
+  }
+
+  atenderEmergencia(body: EmergencyAppointmentDto): Observable<AppointmentDto> {
+    return this.http.post<AppointmentDto>(`${this.urlBase}/emergencia`, body);
   }
 
   getHistorialEstados(id: number): Observable<AppointmentStatusHistoryDto[]> {

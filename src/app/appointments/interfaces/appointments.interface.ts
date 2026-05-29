@@ -41,6 +41,25 @@ export interface AppointmentCreationDto {
   patientId: number;
 }
 
+export interface EmergencyPatientDto {
+  name: string;
+  direction: string;
+  birthday: string;
+  sexId: number;
+  nationalityId: number;
+}
+
+export interface EmergencyAppointmentDto {
+  dpi: string;
+  reason: string;
+  patient?: EmergencyPatientDto;
+}
+
+export interface EmergencyPatientResultDto extends EmergencyPatientDto {
+  id: number;
+  dpi: string;
+}
+
 export interface AppointmentAvailabilityDto {
   disponible: boolean;
   doctorId?: number;

@@ -16,12 +16,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '@auth/services/auth.service';
+import { catalogueInterface } from '@utils/commons.interface';
+import { CatalogueService } from '@utils/modules/catalogues/services/catalogue.service';
 import {
   AppointmentCreationDto,
   AppointmentDto,
   AppointmentAvailabilitySuggestionDto,
   AppointmentStatusHistoryDto,
+  EmergencyAppointmentDto,
+  EmergencyPatientResultDto,
   ExamDto,
   ExamStatusHistoryDto,
   FinalizarExamDto,
@@ -57,6 +62,7 @@ import Swal from 'sweetalert2';
 })
 export class AppointmentsComponent implements OnInit {
   @ViewChild('appointmentDialog') appointmentDialog!: TemplateRef<unknown>;
+  @ViewChild('emergencyDialog') emergencyDialog!: TemplateRef<unknown>;
   @ViewChild('historyDialog') historyDialog!: TemplateRef<unknown>;
   @ViewChild('finishExamDialog') finishExamDialog!: TemplateRef<unknown>;
 
@@ -85,18 +91,27 @@ export class AppointmentsComponent implements OnInit {
   selectedHistoryAppointment?: AppointmentDto;
   selectedHistoryExam?: ExamDto;
   selectedFinishExam?: ExamDto;
+  emergencyPatient?: EmergencyPatientResultDto;
+  emergencyPatientSearched = false;
+  searchingEmergencyPatient = false;
+  sexOptions: catalogueInterface[] = [];
+  nationalityOptions: catalogueInterface[] = [];
   allowedExamDiagnoses: ExamTypeDiagnosisDto[] = [];
   private appointmentDialogRef?: MatDialogRef<unknown>;
+  private emergencyDialogRef?: MatDialogRef<unknown>;
   private historyDialogRef?: MatDialogRef<unknown>;
   private finishExamDialogRef?: MatDialogRef<unknown>;
 
   filterForm: FormGroup;
+  examFilterForm: FormGroup;
   appointmentForm: FormGroup;
+  emergencyForm: FormGroup;
   finishExamForm: FormGroup;
 
   constructor(
     private appointmentsService: AppointmentsService,
     private examTypeDiagnosisService: ExamTypeDiagnosisService,
+    private catalogueService: CatalogueService,
     private authService: AuthService,
     private fb: FormBuilder,
     private dialog: MatDialog,
@@ -104,9 +119,14 @@ export class AppointmentsComponent implements OnInit {
   ) {
     this.filterForm = this.fb.group({
       reason: [''],
+      dpi: [''],
       estado: [''],
       startDateFrom: [''],
       startDateTo: [''],
+    });
+
+    this.examFilterForm = this.fb.group({
+      dpi: [''],
     });
 
     this.appointmentForm = this.fb.group({
@@ -120,6 +140,22 @@ export class AppointmentsComponent implements OnInit {
       ],
     });
 
+    this.emergencyForm = this.fb.group({
+      dpi: [
+        '',
+        [Validators.required, Validators.minLength(13), Validators.maxLength(13)],
+      ],
+      reason: [
+        'Emergencia',
+        [Validators.required, Validators.maxLength(250)],
+      ],
+      name: [''],
+      direction: [''],
+      birthday: [''],
+      sexId: [null],
+      nationalityId: [null],
+    });
+
     this.finishExamForm = this.fb.group({
       results: ['', [Validators.required, Validators.maxLength(1000)]],
       diseaseOrInjuryIds: [[], [Validators.required]],
@@ -129,6 +165,11 @@ export class AppointmentsComponent implements OnInit {
   ngOnInit(): void {
     this.loadAppointments();
     this.loadExams();
+    this.emergencyForm.get('dpi')?.valueChanges.subscribe(() => {
+      this.emergencyPatient = undefined;
+      this.emergencyPatientSearched = false;
+      this.clearEmergencyPatientValidators();
+    });
   }
 
   get startDateControl(): AbstractControl | null {
@@ -149,6 +190,14 @@ export class AppointmentsComponent implements OnInit {
 
   get canScheduleAppointment(): boolean {
     return this.authService.hasRoles(['userNormal']);
+  }
+
+  get canAttendEmergency(): boolean {
+    return this.authService.hasRoles(['NURSE', 'ADMINISTRATOR']);
+  }
+
+  get canFilterByDpi(): boolean {
+    return this.authService.hasRoles(['NURSE', 'ADMINISTRATOR']);
   }
 
   get canManageExam(): boolean {
@@ -193,11 +242,23 @@ export class AppointmentsComponent implements OnInit {
   cleanAppointmentFilters(): void {
     this.filterForm.reset({
       reason: '',
+      dpi: '',
       estado: '',
       startDateFrom: '',
       startDateTo: '',
     });
     this.loadAppointments(1, this.pageSize);
+  }
+
+  searchExams(): void {
+    this.loadExams(1, this.examPageSize);
+  }
+
+  cleanExamFilters(): void {
+    this.examFilterForm.reset({
+      dpi: '',
+    });
+    this.loadExams(1, this.examPageSize);
   }
 
   changeExamPagination(event: PageEvent): void {
@@ -213,7 +274,11 @@ export class AppointmentsComponent implements OnInit {
   loadExams(pageNumber = 1, pageSize = 10): void {
     this.loadingExams = true;
     this.error = '';
-    this.appointmentsService.getExamenes({ pageNumber, pageSize }).subscribe({
+    this.appointmentsService.getExamenes({
+      pageNumber,
+      pageSize,
+      query: this.mapExamFilters(),
+    }).subscribe({
       next: (result) => {
         this.exams = result.items;
         this.totalExams = result.total;
@@ -331,6 +396,117 @@ export class AppointmentsComponent implements OnInit {
     if (closeDialog) {
       this.appointmentDialogRef?.close();
     }
+  }
+
+  abrirAtencionEmergencia(): void {
+    this.resetEmergencyForm(false);
+    this.loadEmergencyCatalogues();
+    this.emergencyDialogRef = this.dialog.open(this.emergencyDialog, {
+      width: '680px',
+      maxWidth: 'calc(100vw - 32px)',
+      autoFocus: false,
+    });
+  }
+
+  buscarPacienteEmergencia(): void {
+    this.success = '';
+    this.error = '';
+    this.emergencyPatient = undefined;
+    this.emergencyPatientSearched = false;
+    this.clearEmergencyPatientValidators();
+
+    const dpiControl = this.emergencyForm.get('dpi');
+    if (!dpiControl || dpiControl.invalid) {
+      dpiControl?.markAsTouched();
+      return;
+    }
+
+    const dpi = String(dpiControl.value).trim();
+    this.searchingEmergencyPatient = true;
+    this.appointmentsService.buscarPacienteEmergenciaPorDpi(dpi).subscribe({
+      next: (patient) => {
+        this.emergencyPatient = patient;
+        this.emergencyPatientSearched = true;
+        this.searchingEmergencyPatient = false;
+      },
+      error: (err) => {
+        if (err?.status === 404) {
+          this.emergencyPatientSearched = true;
+          this.setEmergencyPatientValidators();
+        } else {
+          this.error = err?.error?.error || err?.error?.message || 'No se pudo buscar el paciente.';
+        }
+        this.searchingEmergencyPatient = false;
+      },
+    });
+  }
+
+  async atenderEmergencia(): Promise<void> {
+    this.success = '';
+    this.error = '';
+
+    if (!this.emergencyPatientSearched) {
+      this.error = 'Busca el paciente por DPI antes de atender la emergencia.';
+      this.emergencyForm.get('dpi')?.markAsTouched();
+      return;
+    }
+
+    if (!this.emergencyPatient && this.emergencyPatientSearched) {
+      this.setEmergencyPatientValidators();
+    }
+
+    if (this.emergencyForm.invalid) {
+      this.emergencyForm.markAllAsTouched();
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: 'Deseas atender esta emergencia?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Atender',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    const value = this.emergencyForm.value;
+    const payload: EmergencyAppointmentDto = {
+      dpi: String(value.dpi).trim(),
+      reason: String(value.reason).trim(),
+    };
+
+    if (!this.emergencyPatient) {
+      payload.patient = {
+        name: String(value.name).trim(),
+        direction: String(value.direction).trim(),
+        birthday: value.birthday,
+        sexId: Number(value.sexId),
+        nationalityId: Number(value.nationalityId),
+      };
+    }
+
+    this.saving = true;
+    this.appointmentsService.atenderEmergencia(payload).subscribe({
+      next: () => {
+        this.success = 'Emergencia registrada e iniciada correctamente.';
+        this.saving = false;
+        this.emergencyDialogRef?.close();
+        Swal.fire('Emergencia iniciada', 'La cita de emergencia quedo en curso.', 'success');
+        this.loadAppointments(this.pageNumber, this.pageSize);
+      },
+      error: (err) => {
+        this.error = err?.error?.error || err?.error?.message || 'No se pudo atender la emergencia.';
+        this.saving = false;
+        console.error(err);
+      },
+    });
+  }
+
+  cancelarEmergencia(closeDialog = true): void {
+    this.resetEmergencyForm(closeDialog);
   }
 
   validarDisponibilidad(): void {
@@ -748,6 +924,7 @@ export class AppointmentsComponent implements OnInit {
     const value = this.filterForm.value;
     return {
       reason: value.reason?.trim() ?? '',
+      dpi: value.dpi?.trim() ?? '',
       estado: value.estado ?? '',
       startDateFrom: value.startDateFrom
         ? new Date(`${value.startDateFrom}T00:00:00`).toISOString()
@@ -756,6 +933,84 @@ export class AppointmentsComponent implements OnInit {
         ? new Date(`${value.startDateTo}T00:00:00`).toISOString()
         : '',
     };
+  }
+
+  private mapExamFilters(): Record<string, string> {
+    const value = this.examFilterForm.value;
+    return {
+      dpi: value.dpi?.trim() ?? '',
+    };
+  }
+
+  private loadEmergencyCatalogues(): void {
+    if (this.sexOptions.length > 0 && this.nationalityOptions.length > 0) {
+      return;
+    }
+
+    forkJoin({
+      sex: this.catalogueService.get('sex', 1, 50, {}, true),
+      nationality: this.catalogueService.get('nationality', 1, 50, {}, true),
+    }).subscribe({
+      next: ({ sex, nationality }) => {
+        this.sexOptions = sex.items;
+        this.nationalityOptions = nationality.items;
+      },
+      error: (err) => {
+        this.error = 'No se pudieron cargar los catalogos para registrar pacientes.';
+        console.error(err);
+      },
+    });
+  }
+
+  private setEmergencyPatientValidators(): void {
+    this.emergencyForm.get('name')?.setValidators([
+      Validators.required,
+      Validators.maxLength(100),
+    ]);
+    this.emergencyForm.get('direction')?.setValidators([
+      Validators.required,
+      Validators.maxLength(200),
+    ]);
+    this.emergencyForm.get('birthday')?.setValidators([Validators.required]);
+    this.emergencyForm.get('sexId')?.setValidators([Validators.required]);
+    this.emergencyForm.get('nationalityId')?.setValidators([Validators.required]);
+    this.updateEmergencyPatientValidatorState();
+  }
+
+  private clearEmergencyPatientValidators(): void {
+    ['name', 'direction', 'birthday', 'sexId', 'nationalityId'].forEach((controlName) => {
+      const control = this.emergencyForm.get(controlName);
+      control?.clearValidators();
+      control?.setErrors(null);
+    });
+    this.updateEmergencyPatientValidatorState();
+  }
+
+  private updateEmergencyPatientValidatorState(): void {
+    ['name', 'direction', 'birthday', 'sexId', 'nationalityId'].forEach((controlName) => {
+      this.emergencyForm.get(controlName)?.updateValueAndValidity({ emitEvent: false });
+    });
+  }
+
+  private resetEmergencyForm(closeDialog = true): void {
+    this.emergencyForm.reset({
+      dpi: '',
+      reason: 'Emergencia',
+      name: '',
+      direction: '',
+      birthday: '',
+      sexId: null,
+      nationalityId: null,
+    });
+    this.emergencyPatient = undefined;
+    this.emergencyPatientSearched = false;
+    this.searchingEmergencyPatient = false;
+    this.clearEmergencyPatientValidators();
+    this.success = '';
+    this.error = '';
+    if (closeDialog) {
+      this.emergencyDialogRef?.close();
+    }
   }
 
   get selectedExamDiagnosisIds(): number[] {

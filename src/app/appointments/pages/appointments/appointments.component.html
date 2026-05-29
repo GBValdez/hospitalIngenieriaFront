@@ -8,6 +8,14 @@
     >
       Agendar cita
     </button>
+    <button
+      *ngIf="canAttendEmergency"
+      type="button"
+      (click)="abrirAtencionEmergencia()"
+    >
+      <mat-icon>emergency</mat-icon>
+      Atender emergencia
+    </button>
   </div>
 
   <p *ngIf="loading">Cargando citas...</p>
@@ -36,6 +44,11 @@
       <label>
         Motivo
         <input type="text" formControlName="reason" />
+      </label>
+
+      <label *ngIf="canFilterByDpi">
+        DPI
+        <input type="text" formControlName="dpi" maxlength="13" />
       </label>
 
       <label>
@@ -172,6 +185,20 @@
   </section>
 
   <section *ngIf="activeTab === 'exams'" class="tab-panel">
+    <form class="filters" [formGroup]="examFilterForm" (ngSubmit)="searchExams()">
+      <label *ngIf="canFilterByDpi">
+        DPI
+        <input type="text" formControlName="dpi" maxlength="13" />
+      </label>
+
+      <div class="filter-actions">
+        <button type="button" class="secondary" (click)="cleanExamFilters()">
+          Limpiar
+        </button>
+        <button type="submit">Buscar</button>
+      </div>
+    </form>
+
     <p *ngIf="loadingExams">Cargando examenes...</p>
     <p *ngIf="!loadingExams && exams.length === 0">No hay examenes programados.</p>
 
@@ -326,6 +353,88 @@
         {{ saving ? "Agendando..." : "Agendar" }}
       </button>
       <button type="button" class="secondary" (click)="cancelarAgendamiento()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #emergencyDialog>
+  <form class="appointment-form emergency-form" [formGroup]="emergencyForm" (ngSubmit)="atenderEmergencia()">
+    <h2>Atender emergencia</h2>
+
+    <div class="dpi-search">
+      <label>
+        DPI del paciente
+        <input type="text" formControlName="dpi" maxlength="13" />
+      </label>
+      <button type="button" class="secondary" (click)="buscarPacienteEmergencia()" [disabled]="searchingEmergencyPatient">
+        {{ searchingEmergencyPatient ? "Buscando..." : "Buscar" }}
+      </button>
+    </div>
+    <p *ngIf="emergencyForm.get('dpi')?.touched && emergencyForm.get('dpi')?.hasError('required')" class="field-error">
+      El DPI es obligatorio.
+    </p>
+    <p *ngIf="emergencyForm.get('dpi')?.touched && (emergencyForm.get('dpi')?.hasError('minlength') || emergencyForm.get('dpi')?.hasError('maxlength'))" class="field-error">
+      El DPI debe tener 13 caracteres.
+    </p>
+
+    <section *ngIf="emergencyPatient" class="patient-found">
+      <strong>Paciente encontrado</strong>
+      <span>{{ emergencyPatient.name }}</span>
+      <small>DPI {{ emergencyPatient.dpi }}</small>
+    </section>
+
+    <section *ngIf="emergencyPatientSearched && !emergencyPatient" class="patient-registration">
+      <p class="field-error">No se encontro el paciente. Completa sus datos para registrarlo.</p>
+
+      <label>
+        Nombre
+        <input type="text" formControlName="name" maxlength="100" />
+      </label>
+
+      <label>
+        Direccion
+        <input type="text" formControlName="direction" maxlength="200" />
+      </label>
+
+      <label>
+        Fecha de nacimiento
+        <input type="date" formControlName="birthday" />
+      </label>
+
+      <mat-form-field>
+        <mat-label>Sexo</mat-label>
+        <mat-select formControlName="sexId">
+          @for (sex of sexOptions; track sex.id) {
+            <mat-option [value]="sex.id">{{ sex.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Nacionalidad</mat-label>
+        <mat-select formControlName="nationalityId">
+          @for (nationality of nationalityOptions; track nationality.id) {
+            <mat-option [value]="nationality.id">{{ nationality.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </section>
+
+    <label>
+      Motivo de emergencia
+      <textarea rows="3" formControlName="reason" maxlength="250"></textarea>
+    </label>
+    <p *ngIf="emergencyForm.get('reason')?.touched && emergencyForm.get('reason')?.hasError('required')" class="field-error">
+      El motivo es obligatorio.
+    </p>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="saving || searchingEmergencyPatient">
+        {{ saving ? "Registrando..." : "Atender emergencia" }}
+      </button>
+      <button type="button" class="secondary" (click)="cancelarEmergencia()">
         Cancelar
       </button>
     </div>
