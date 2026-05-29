@@ -1,0 +1,67 @@
+.inicio-cita-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+mat-dialog-content {
+  display: grid;
+  gap: 0.75rem;
+  max-height: min(72vh, 680px);
+}
+
+.appointment-summary {
+  background: #f8fafc;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+}
+
+label {
+  display: grid;
+  font-weight: 600;
+  gap: 0.35rem;
+}
+
+input {
+  border: 1px solid #b8c0cc;
+  border-radius: 6px;
+  font: inherit;
+  padding: 0.55rem 0.65rem;
+}
+
+.vitals-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+button {
+  background: #1d4ed8;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.55rem 0.85rem;
+}
+
+button.secondary {
+  background: #eef2f7;
+  color: #152033;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.error,
+.field-error {
+  color: #b42318;
+}
+
+.field-error {
+  margin: -0.35rem 0 0;
+}

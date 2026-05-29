@@ -5,9 +5,17 @@ import {
   AppointmentAvailabilityDto,
   AppointmentDto,
   AppointmentCreationDto,
+  AppointmentStatusHistoryDto,
+  ExamDto,
+  ExamStatusHistoryDto,
+  FinalizarCitaDto,
+  InicioCitaDto,
   ReagendarDto,
 } from '../interfaces/appointments.interface';
 import { Observable } from 'rxjs';
+import { environment } from '@env/environment';
+import { pagDto, pagOptions } from '@utils/commons.interface';
+import { fixedQueryParams } from '@utils/utils';
 
 @Injectable({
   providedIn: 'root',
@@ -29,10 +37,72 @@ export class AppointmentsService extends CommonsSvcService<
     return this.http.post<void>(`${this.urlBase}/reagendar`, body);
   }
 
-  validarDisponibilidad(fechaHora: string): Observable<AppointmentAvailabilityDto> {
+  iniciarCita(body: InicioCitaDto): Observable<AppointmentDto> {
+    return this.http.post<AppointmentDto>(`${this.urlBase}/inicio`, body);
+  }
+
+  finalizarCita(body: FinalizarCitaDto): Observable<AppointmentDto> {
+    return this.http.post<AppointmentDto>(`${this.urlBase}/finalizar`, body);
+  }
+
+  getHistorialEstados(id: number): Observable<AppointmentStatusHistoryDto[]> {
+    return this.http.get<AppointmentStatusHistoryDto[]>(
+      `${this.urlBase}/${id}/historial-estados`,
+    );
+  }
+
+  getExamenes(opts?: pagOptions<object>): Observable<pagDto<ExamDto>> {
+    const params = fixedQueryParams({
+      ...(opts?.query ?? {}),
+      pageSize: opts?.pageSize ?? undefined,
+      pageNumber: opts?.pageNumber ?? undefined,
+      all: opts?.all ?? undefined,
+    });
+
+    return this.http.get<pagDto<ExamDto>>(`${environment.api}/api/examenes`, {
+      params,
+    });
+  }
+
+  iniciarExamen(examId: number): Observable<ExamDto> {
+    return this.http.post<ExamDto>(`${environment.api}/api/examenes/inicio`, {
+      examId,
+    });
+  }
+
+  finalizarExamen(examId: number, results: string): Observable<ExamDto> {
+    return this.http.post<ExamDto>(`${environment.api}/api/examenes/finalizar`, {
+      examId,
+      results,
+    });
+  }
+
+  getHistorialEstadosExamen(id: number): Observable<ExamStatusHistoryDto[]> {
+    return this.http.get<ExamStatusHistoryDto[]>(
+      `${environment.api}/api/examenes/${id}/historial-estados`,
+    );
+  }
+
+  validarDisponibilidad(
+    fechaHora: string,
+    doctorId?: number,
+    patientId?: number,
+    excludeAppointmentId?: number,
+  ): Observable<AppointmentAvailabilityDto> {
+    const params: Record<string, string> = { fechaHora };
+    if (doctorId) {
+      params['doctorId'] = String(doctorId);
+    }
+    if (patientId) {
+      params['patientId'] = String(patientId);
+    }
+    if (excludeAppointmentId) {
+      params['excludeAppointmentId'] = String(excludeAppointmentId);
+    }
+
     return this.http.get<AppointmentAvailabilityDto>(
       `${this.urlBase}/disponibilidad`,
-      { params: { fechaHora } },
+      { params },
     );
   }
 }

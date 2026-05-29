@@ -1,0 +1,152 @@
+<form class="finalizar-cita-form" [formGroup]="form" (ngSubmit)="guardar()">
+  <h2 mat-dialog-title>Finalizar cita</h2>
+
+  <mat-dialog-content>
+    <section class="appointment-summary">
+      <strong>{{ appointment.reason }}</strong>
+      <span>{{ appointment.startDate | date: "medium" }}</span>
+      <span>Paciente: {{ appointment.patientName || appointment.patientId }}</span>
+      <span>Doctor: {{ appointment.doctorName || appointment.doctorId }}</span>
+    </section>
+
+    <p *ngIf="error" class="error">{{ error }}</p>
+
+    <label>
+      Diagnostico
+      <textarea formControlName="diagnosis" rows="3" maxlength="500"></textarea>
+    </label>
+    <p
+      *ngIf="getControl('diagnosis')?.touched && getControl('diagnosis')?.invalid"
+      class="field-error"
+    >
+      El diagnostico es obligatorio y no puede superar 500 caracteres.
+    </p>
+
+    <label>
+      Tratamiento
+      <textarea formControlName="treatment" rows="3" maxlength="500"></textarea>
+    </label>
+    <p
+      *ngIf="getControl('treatment')?.touched && getControl('treatment')?.invalid"
+      class="field-error"
+    >
+      El tratamiento es obligatorio y no puede superar 500 caracteres.
+    </p>
+
+    <label>
+      Observaciones
+      <textarea formControlName="observations" rows="3" maxlength="500"></textarea>
+    </label>
+    <p
+      *ngIf="getControl('observations')?.touched && getControl('observations')?.invalid"
+      class="field-error"
+    >
+      Las observaciones no pueden superar 500 caracteres.
+    </p>
+
+    <label class="check-row">
+      <input type="checkbox" formControlName="requiresRecipe" />
+      Requiere receta medica
+    </label>
+
+    <section *ngIf="form.value.requiresRecipe" formArrayName="recipes" class="block">
+      <div
+        *ngFor="let recipe of recipes.controls; let i = index"
+        [formGroupName]="i"
+        class="item-row"
+      >
+        <label>
+          Medicamento
+          <select formControlName="medicineId">
+            <option [ngValue]="null">Seleccione</option>
+            <option *ngFor="let medicine of medicines" [ngValue]="medicine.id">
+              {{ medicine.name }}
+            </option>
+          </select>
+        </label>
+        <p *ngIf="medicineCatalogError" class="field-error">
+          {{ medicineCatalogError }}
+        </p>
+        <label>
+          Dias
+          <input type="text" formControlName="days" appOnlyNumberInput />
+        </label>
+        <label>
+          Plazo entre dosis
+          <input type="text" formControlName="timeLimit" appOnlyNumberInput />
+        </label>
+        <button type="button" class="secondary icon-action" (click)="removeRecipe(i)">
+          Quitar
+        </button>
+      </div>
+      <button type="button" class="secondary" (click)="addRecipe()">
+        Agregar medicamento
+      </button>
+    </section>
+
+    <label class="check-row">
+      <input type="checkbox" formControlName="requiresLabExams" />
+      Requiere examenes de laboratorio
+    </label>
+
+    <section *ngIf="form.value.requiresLabExams" formArrayName="labExams" class="block">
+      <div
+        *ngFor="let exam of labExams.controls; let i = index"
+        [formGroupName]="i"
+        class="item-row exam-row"
+      >
+        <label>
+          Tipo de examen
+          <select formControlName="examTypeId">
+            <option [ngValue]="null">Seleccione</option>
+            <option *ngFor="let examType of examTypes" [ngValue]="examType.id">
+              {{ examType.name }}
+            </option>
+          </select>
+        </label>
+        <label>
+          Indicaciones
+          <textarea formControlName="indications" rows="2" maxlength="500"></textarea>
+        </label>
+        <button type="button" class="secondary icon-action" (click)="removeLabExam(i)">
+          Quitar
+        </button>
+      </div>
+      <button type="button" class="secondary" (click)="addLabExam()">
+        Agregar examen
+      </button>
+    </section>
+
+    <label class="check-row">
+      <input type="checkbox" formControlName="requiresReschedule" />
+      Requiere reagendar cita
+    </label>
+
+    <section *ngIf="form.value.requiresReschedule" class="block reschedule-grid">
+      <label>
+        Motivo
+        <select formControlName="rescheduleReason">
+          <option value="">Seleccione</option>
+          <option *ngFor="let reason of rescheduleReasons" [value]="reason">
+            {{ reason }}
+          </option>
+        </select>
+      </label>
+      <label>
+        Nueva fecha y hora
+        <input
+          type="datetime-local"
+          formControlName="newStartDate"
+          [min]="minDateTime"
+        />
+      </label>
+    </section>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button type="button" class="secondary" (click)="cerrar()">Cancelar</button>
+    <button type="submit" [disabled]="form.invalid || saving || loadingCatalogues">
+      {{ saving ? "Guardando..." : "Finalizar" }}
+    </button>
+  </mat-dialog-actions>
+</form>

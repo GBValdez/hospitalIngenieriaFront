@@ -132,7 +132,7 @@ export const routes: Routes = [
           import('@appointments/pages/appointments/appointments.component').then(
             (m) => m.AppointmentsComponent,
           ),
-        data: { isProtect: 20, roles: ['userNormal'] },
+        data: { isProtect: 20, roles: ['userNormal', 'NURSE', 'ADMINISTRATOR'] },
         canActivate: [AuthGuard],
       },
       {
@@ -144,6 +144,16 @@ export const routes: Routes = [
         data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
         canActivate: [AuthGuard],
         title: 'Doctores',
+      },
+      {
+        path: 'laboratory-attendants',
+        loadComponent: () =>
+          import(
+            './laboratory-attendants/pages/laboratory-attendants/laboratory-attendants.component'
+          ).then((m) => m.LaboratoryAttendantsComponent),
+        data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Encargados de laboratorio',
       },
       ...CATALOGUE_ROUTE,
     ],

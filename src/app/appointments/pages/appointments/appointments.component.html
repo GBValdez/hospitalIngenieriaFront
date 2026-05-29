@@ -1,7 +1,11 @@
 <section class="appointments-list">
   <div class="page-header">
     <h1>Gestion de citas</h1>
-    <button type="button" (click)="abrirFormularioAgendar()">
+    <button
+      *ngIf="canScheduleAppointment"
+      type="button"
+      (click)="abrirFormularioAgendar()"
+    >
       Agendar cita
     </button>
   </div>
@@ -9,60 +13,176 @@
   <p *ngIf="loading">Cargando citas...</p>
   <p *ngIf="error" class="error">{{ error }}</p>
   <p *ngIf="success" class="success">{{ success }}</p>
-  <p *ngIf="!loading && appointments.length === 0">
-    No hay citas disponibles.
-  </p>
 
-  <div *ngFor="let appointment of appointments" class="appointment-card">
-    <header>
-      <strong>{{ appointment.reason }}</strong>
-      <span class="status">{{ appointment.status }}</span>
-    </header>
-
-    <div class="detail-row">
-      <span>Inicio:</span>
-      <span>{{ appointment.startDate | date: "medium" }}</span>
-    </div>
-    <div class="detail-row">
-      <span>Fin:</span>
-      <span>{{ appointment.endDate | date: "medium" }}</span>
-    </div>
-    <div class="detail-row">
-      <span>Doctor:</span>
-      <span>{{ appointment.doctorId }}</span>
-    </div>
-    <div class="detail-row">
-      <span>Paciente:</span>
-      <span>{{ appointment.patientId }}</span>
-    </div>
-
-    <div class="actions">
-      <button
-        type="button"
-        (click)="reagendarCita(appointment)"
-        [disabled]="appointment.status !== 'ACTIVO'"
-      >
-        Reagendar
-      </button>
-      <button
-        type="button"
-        class="secondary"
-        (click)="cancelarCita(appointment)"
-        [disabled]="appointment.status !== 'ACTIVO'"
-      >
-        Cancelar
-      </button>
-    </div>
+  <div class="tabs" role="tablist" aria-label="Gestion de citas">
+    <button
+      type="button"
+      [class.active]="activeTab === 'appointments'"
+      (click)="setTab('appointments')"
+    >
+      Citas
+    </button>
+    <button
+      type="button"
+      [class.active]="activeTab === 'exams'"
+      (click)="setTab('exams')"
+    >
+      Examenes
+    </button>
   </div>
 
-  <mat-paginator
-    *ngIf="appointments.length > 0"
-    [length]="totalAppointments"
-    [pageSize]="pageSize"
-    [pageIndex]="pageNumber - 1"
-    [pageSizeOptions]="[5, 10, 15, 20]"
-    (page)="changePagination($event)"
-  ></mat-paginator>
+  <section *ngIf="activeTab === 'appointments'" class="tab-panel">
+    <p *ngIf="!loading && appointments.length === 0">No hay citas disponibles.</p>
+
+    <div *ngFor="let appointment of appointments" class="appointment-card">
+      <header>
+        <strong>{{ appointment.reason }}</strong>
+        <span class="status">{{ appointment.status }}</span>
+      </header>
+
+      <div class="detail-row">
+        <span>Inicio:</span>
+        <span>{{ appointment.startDate | date: "medium" }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Fin:</span>
+        <span>{{ appointment.endDate ? (appointment.endDate | date: "medium") : "" }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Doctor:</span>
+        <span>{{ appointment.doctorName || appointment.doctorId }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Paciente:</span>
+        <span>{{ appointment.patientName || appointment.patientId }}</span>
+      </div>
+      <div class="detail-row" *ngIf="appointment.arrivalDate">
+        <span>Llegada:</span>
+        <span>{{ appointment.arrivalDate | date: "medium" }}</span>
+      </div>
+
+      <div class="actions">
+        <button
+          *ngIf="canStartAppointment"
+          type="button"
+          (click)="abrirInicioCita(appointment)"
+          [disabled]="
+            !canStartAppointmentByStatus(appointment) ||
+            !isWithinStartWindow(appointment)
+          "
+        >
+          Inicio cita
+        </button>
+        <button type="button" (click)="verHistorialEstados(appointment)">
+          Historial
+        </button>
+        <button
+          *ngIf="canFinishAppointment"
+          type="button"
+          (click)="finalizarCita(appointment)"
+          [disabled]="!canFinishAppointmentByStatus(appointment)"
+        >
+          Finalizar consulta
+        </button>
+        <button
+          type="button"
+          (click)="reagendarCita(appointment)"
+          [disabled]="appointment.status !== 'ACTIVO'"
+        >
+          Reagendar
+        </button>
+        <button
+          type="button"
+          class="secondary"
+          (click)="cancelarCita(appointment)"
+          [disabled]="!canCancelAppointment(appointment)"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+
+    <mat-paginator
+      *ngIf="appointments.length > 0"
+      [length]="totalAppointments"
+      [pageSize]="pageSize"
+      [pageIndex]="pageNumber - 1"
+      [pageSizeOptions]="[5, 10, 15, 20]"
+      (page)="changePagination($event)"
+    ></mat-paginator>
+  </section>
+
+  <section *ngIf="activeTab === 'exams'" class="tab-panel">
+    <p *ngIf="loadingExams">Cargando examenes...</p>
+    <p *ngIf="!loadingExams && exams.length === 0">No hay examenes programados.</p>
+
+    <div *ngFor="let exam of exams" class="appointment-card exam-card">
+      <header>
+        <strong>{{ exam.examTypeName }}</strong>
+        <span class="status">{{ exam.status }}</span>
+      </header>
+
+      <div class="detail-row">
+        <span>Inicio:</span>
+        <span>{{ exam.startDate | date: "medium" }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Fin:</span>
+        <span>{{ exam.endDate | date: "medium" }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Paciente:</span>
+        <span>{{ exam.patientName || exam.patientId }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Doctor:</span>
+        <span>{{ exam.doctorName || exam.doctorId }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Encargado:</span>
+        <span>{{ exam.attendantName || exam.attendantId }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Indicaciones:</span>
+        <span>{{ exam.observations }}</span>
+      </div>
+      <div class="detail-row">
+        <span>Resultado:</span>
+        <span>{{ exam.results || "Pendiente" }}</span>
+      </div>
+
+      <div class="actions">
+        <button
+          *ngIf="canManageExam"
+          type="button"
+          (click)="iniciarExamen(exam)"
+          [disabled]="!canStartExamByStatus(exam)"
+        >
+          Inicio examen
+        </button>
+        <button
+          *ngIf="canManageExam"
+          type="button"
+          (click)="finalizarExamen(exam)"
+          [disabled]="!canFinishExamByStatus(exam)"
+        >
+          Finalizar examen
+        </button>
+        <button type="button" class="secondary" (click)="verHistorialEstadosExamen(exam)">
+          Historial
+        </button>
+      </div>
+    </div>
+
+    <mat-paginator
+      *ngIf="exams.length > 0"
+      [length]="totalExams"
+      [pageSize]="examPageSize"
+      [pageIndex]="examPageNumber - 1"
+      [pageSizeOptions]="[5, 10, 15, 20]"
+      (page)="changeExamPagination($event)"
+    ></mat-paginator>
+  </section>
 </section>
 
 <ng-template #appointmentDialog>
@@ -83,13 +203,17 @@
       />
     </label>
     <p
-      *ngIf="startDateControl?.touched && startDateControl?.hasError('required')"
+      *ngIf="
+        startDateControl?.touched && startDateControl?.hasError('required')
+      "
       class="field-error"
     >
       La fecha y hora son obligatorias.
     </p>
     <p
-      *ngIf="startDateControl?.touched && startDateControl?.hasError('pastDate')"
+      *ngIf="
+        startDateControl?.touched && startDateControl?.hasError('pastDate')
+      "
       class="field-error"
     >
       La fecha y hora no pueden ser anteriores a la actual.
@@ -120,6 +244,16 @@
     >
       {{ availabilityMessage }}
     </p>
+    <section *ngIf="availabilitySuggestions.length > 0" class="suggestions">
+      <button
+        *ngFor="let suggestion of availabilitySuggestions"
+        type="button"
+        class="secondary"
+        (click)="aplicarRecomendacion(suggestion)"
+      >
+        {{ suggestion.startDate | date: "medium" }}
+      </button>
+    </section>
 
     <div class="form-actions">
       <button
@@ -133,4 +267,51 @@
       </button>
     </div>
   </form>
+</ng-template>
+
+<ng-template #historyDialog>
+  <section class="history-dialog">
+    <h2>Historial de estados</h2>
+    <p *ngIf="selectedHistoryAppointment">
+      Cita #{{ selectedHistoryAppointment.id }}
+    </p>
+    <p *ngIf="selectedHistoryExam">
+      Examen #{{ selectedHistoryExam.id }} - {{ selectedHistoryExam.examTypeName }}
+    </p>
+
+    <p *ngIf="loadingHistory">Cargando historial...</p>
+    <p
+      *ngIf="
+        !loadingHistory &&
+        statusHistory.length === 0 &&
+        examStatusHistory.length === 0
+      "
+    >
+      No hay cambios de estado registrados.
+    </p>
+
+    <div *ngFor="let item of currentHistoryItems" class="history-item">
+      <header>
+        <strong>{{ item.status }}</strong>
+        <span>{{ item.changedAt | date: "medium" }}</span>
+      </header>
+      <p *ngIf="item.previousStatus">
+        {{ item.previousStatus }} -> {{ item.status }}
+      </p>
+      <p *ngIf="item.comment">{{ item.comment }}</p>
+      <small *ngIf="item.changedByUserName">
+        Usuario: {{ item.changedByUserName }}
+      </small>
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="button"
+        class="secondary"
+        (click)="cerrarHistorialEstados()"
+      >
+        Cerrar
+      </button>
+    </div>
+  </section>
 </ng-template>

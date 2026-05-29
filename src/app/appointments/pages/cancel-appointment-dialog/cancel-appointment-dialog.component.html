@@ -1,0 +1,20 @@
+<section class="cancel-dialog">
+  <h2 mat-dialog-title>Cancelar cita</h2>
+
+  <mat-dialog-content>
+    <p>Esta accion no se puede deshacer.</p>
+    <div class="appointment-summary">
+      <strong>{{ appointment.reason }}</strong>
+      <span>{{ appointment.startDate | date: "medium" }}</span>
+      <span>Paciente: {{ appointment.patientName || appointment.patientId }}</span>
+      <span>Doctor: {{ appointment.doctorName || appointment.doctorId }}</span>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button type="button" class="secondary" (click)="cancelar()">Volver</button>
+    <button type="button" class="danger" (click)="confirmar()">
+      Cancelar cita
+    </button>
+  </mat-dialog-actions>
+</section>

@@ -40,7 +40,10 @@ export class GeneralMenuComponent implements OnInit {
         text: 'Citas',
         icon: 'event',
         click: '/session/appointments',
-        show: res?.roles.includes('userNormal'),
+        show:
+          res?.roles.includes('userNormal') ||
+          res?.roles.includes('NURSE') ||
+          res?.roles.includes('ADMINISTRATOR'),
       },
       {
         text: 'Administrador',
@@ -57,6 +60,12 @@ export class GeneralMenuComponent implements OnInit {
             text: 'Doctores',
             icon: 'medical_services',
             click: '/session/doctors',
+            show: true,
+          },
+          {
+            text: 'Laboratorio',
+            icon: 'science',
+            click: '/session/laboratory-attendants',
             show: true,
           },
           {

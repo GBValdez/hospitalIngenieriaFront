@@ -1,0 +1,108 @@
+<form class="inicio-cita-form" [formGroup]="form" (ngSubmit)="guardar()">
+  <h2 mat-dialog-title>Inicio de cita</h2>
+
+  <mat-dialog-content>
+    <section class="appointment-summary">
+      <strong>{{ appointment.reason }}</strong>
+      <span>{{ appointment.startDate | date: "medium" }}</span>
+      <span>Paciente: {{ appointment.patientName || appointment.patientId }}</span>
+      <span>Doctor: {{ appointment.doctorName || appointment.doctorId }}</span>
+    </section>
+
+    <p *ngIf="error" class="error">{{ error }}</p>
+
+    <label>
+      Presion arterial
+      <input
+        type="text"
+        formControlName="bloodPressure"
+        appOnlyNumberInput
+        [decimals]="true"
+      />
+    </label>
+    <p
+      *ngIf="getControl('bloodPressure')?.touched && getControl('bloodPressure')?.invalid"
+      class="field-error"
+    >
+      La presion arterial es obligatoria y debe ser mayor a cero.
+    </p>
+
+    <div class="vitals-grid">
+      <label>
+        Temperatura
+        <input
+          type="text"
+          formControlName="temperature"
+          appOnlyNumberInput
+          [decimals]="true"
+        />
+      </label>
+      <label>
+        Frecuencia cardiaca
+        <input
+          type="text"
+          formControlName="heartRate"
+          appOnlyNumberInput
+          [decimals]="true"
+        />
+      </label>
+      <label>
+        Frecuencia respiratoria
+        <input
+          type="text"
+          formControlName="respiratoryRate"
+          appOnlyNumberInput
+          [decimals]="true"
+        />
+      </label>
+      <label>
+        Saturacion de oxigeno
+        <input
+          type="text"
+          formControlName="oxygenSaturation"
+          appOnlyNumberInput
+          [decimals]="true"
+        />
+      </label>
+      <label>
+        Peso
+        <input
+          type="text"
+          formControlName="weight"
+          appOnlyNumberInput
+          [decimals]="true"
+        />
+      </label>
+      <label>
+        Talla
+        <input
+          type="text"
+          formControlName="height"
+          appOnlyNumberInput
+          [decimals]="true"
+        />
+      </label>
+    </div>
+
+    <p
+      *ngIf="
+        (getControl('temperature')?.touched && getControl('temperature')?.invalid) ||
+        (getControl('heartRate')?.touched && getControl('heartRate')?.invalid) ||
+        (getControl('respiratoryRate')?.touched && getControl('respiratoryRate')?.invalid) ||
+        (getControl('oxygenSaturation')?.touched && getControl('oxygenSaturation')?.invalid) ||
+        (getControl('weight')?.touched && getControl('weight')?.invalid) ||
+        (getControl('height')?.touched && getControl('height')?.invalid)
+      "
+      class="field-error"
+    >
+      Todos los signos vitales son obligatorios y deben ser mayores a cero.
+    </p>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button type="button" class="secondary" (click)="cerrar()">Cancelar</button>
+    <button type="submit" [disabled]="form.invalid || saving">
+      {{ saving ? "Guardando..." : "Guardar" }}
+    </button>
+  </mat-dialog-actions>
+</form>

@@ -1,0 +1,59 @@
+<form class="reschedule-form" [formGroup]="form" (ngSubmit)="guardar()">
+  <h2 mat-dialog-title>Reagendar cita</h2>
+
+  <mat-dialog-content>
+    <section class="appointment-summary">
+      <strong>{{ appointment.reason }}</strong>
+      <span>Actual: {{ appointment.startDate | date: "medium" }}</span>
+      <span>Paciente: {{ appointment.patientName || appointment.patientId }}</span>
+      <span>Doctor: {{ appointment.doctorName || appointment.doctorId }}</span>
+    </section>
+
+    <label>
+      Nueva fecha y hora
+      <input
+        type="datetime-local"
+        formControlName="newStartDate"
+        [min]="minDateTime"
+        (blur)="validarDisponibilidad()"
+      />
+    </label>
+    <p
+      *ngIf="newStartDateControl?.touched && newStartDateControl?.hasError('required')"
+      class="field-error"
+    >
+      La fecha y hora son obligatorias.
+    </p>
+    <p
+      *ngIf="newStartDateControl?.touched && newStartDateControl?.hasError('pastDate')"
+      class="field-error"
+    >
+      La fecha y hora deben ser futuras.
+    </p>
+    <p *ngIf="checkingAvailability">Validando disponibilidad...</p>
+    <p
+      *ngIf="availabilityMessage"
+      [class.field-error]="!availabilityAvailable"
+      [class.success]="availabilityAvailable"
+    >
+      {{ availabilityMessage }}
+    </p>
+    <section *ngIf="availabilitySuggestions.length > 0" class="suggestions">
+      <button
+        *ngFor="let suggestion of availabilitySuggestions"
+        type="button"
+        class="secondary"
+        (click)="aplicarRecomendacion(suggestion)"
+      >
+        {{ suggestion.startDate | date: "medium" }}
+      </button>
+    </section>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button type="button" class="secondary" (click)="cancelar()">Cancelar</button>
+    <button type="submit" [disabled]="form.invalid || checkingAvailability">
+      Reagendar
+    </button>
+  </mat-dialog-actions>
+</form>
