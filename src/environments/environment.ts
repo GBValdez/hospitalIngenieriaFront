@@ -1,4 +1,4 @@
 export const environment = {
-  api: 'http://localhost:5279',
+  api: '',
   key: '123456',
 };
