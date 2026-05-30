@@ -20,6 +20,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '@auth/services/auth.service';
 import { catalogueInterface } from '@utils/commons.interface';
 import { CatalogueService } from '@utils/modules/catalogues/services/catalogue.service';
+import { VoiceAnnouncementService } from '@utils/services/voice-announcement.service';
 import {
   AppointmentCreationDto,
   AppointmentDto,
@@ -114,6 +115,7 @@ export class AppointmentsComponent implements OnInit {
     private appointmentsService: AppointmentsService,
     private examTypeDiagnosisService: ExamTypeDiagnosisService,
     private catalogueService: CatalogueService,
+    private voiceAnnouncementService: VoiceAnnouncementService,
     private authService: AuthService,
     private fb: FormBuilder,
     private dialog: MatDialog,
@@ -829,6 +831,7 @@ export class AppointmentsComponent implements OnInit {
     this.appointmentsService.iniciarExamen(exam.id).subscribe({
       next: () => {
         this.success = 'Examen iniciado correctamente.';
+        this.voiceAnnouncementService.announcePatientCall(exam.patientName || exam.patientId);
         Swal.fire('Examen iniciado', 'El examen fue iniciado correctamente.', 'success');
         this.loadExams(this.examPageNumber, this.examPageSize);
       },

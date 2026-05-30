@@ -13,6 +13,7 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { OnlyNumberInputDirective } from '@utils/directivas/only-number-input.directive';
+import { VoiceAnnouncementService } from '@utils/services/voice-announcement.service';
 import { AppointmentDto, InicioCitaDto } from '../../interfaces/appointments.interface';
 import { AppointmentsService } from '../../services/appointments.service';
 import Swal from 'sweetalert2';
@@ -37,6 +38,7 @@ export class InicioCitaComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public appointment: AppointmentDto,
     private appointmentsService: AppointmentsService,
+    private voiceAnnouncementService: VoiceAnnouncementService,
     private dialogRef: MatDialogRef<InicioCitaComponent>,
     private fb: FormBuilder,
   ) {
@@ -91,6 +93,9 @@ export class InicioCitaComponent {
     this.appointmentsService.iniciarCita(payload).subscribe({
       next: async () => {
         this.saving = false;
+        this.voiceAnnouncementService.announcePatientCall(
+          this.appointment.patientName || this.appointment.patientId,
+        );
         await Swal.fire('Cita iniciada', 'El inicio de la cita fue registrado correctamente.', 'success');
         this.dialogRef.close(true);
       },
