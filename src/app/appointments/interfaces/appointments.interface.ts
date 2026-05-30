@@ -70,6 +70,7 @@ export interface AppointmentAvailabilityDto {
   disponible: boolean;
   doctorId?: number;
   recomendaciones?: AppointmentAvailabilitySuggestionDto[];
+  message?: string;
 }
 
 export interface AppointmentAvailabilitySuggestionDto {

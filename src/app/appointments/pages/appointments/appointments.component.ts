@@ -620,11 +620,13 @@ export class AppointmentsComponent implements OnInit {
       next: (availability) => {
         this.selectedDoctorId = availability.doctorId;
         this.availabilitySuggestions = availability.recomendaciones ?? [];
-        this.availabilityMessage = availability.disponible
-          ? 'Horario disponible.'
-          : this.availabilitySuggestions.length > 0
-            ? 'No hay disponibilidad para ese horario. Puedes usar una de estas recomendaciones.'
-            : 'No hay disponibilidad para ese horario.';
+        this.availabilityMessage = availability.message || (
+          availability.disponible
+            ? 'Horario disponible.'
+            : this.availabilitySuggestions.length > 0
+              ? 'No hay disponibilidad para ese horario. Puedes usar una de estas recomendaciones.'
+              : 'No hay disponibilidad para ese horario.'
+        );
         this.checkingAvailability = false;
       },
       error: (err) => {
@@ -728,7 +730,7 @@ export class AppointmentsComponent implements OnInit {
     }
 
     if (!this.isWithinStartWindow(appointment)) {
-      this.error = 'La cita solo puede iniciarse desde la hora programada hasta 10 minutos despues.';
+      this.error = 'La cita solo puede iniciarse desde la hora programada hasta 2 horas despues.';
       return;
     }
 
@@ -776,7 +778,7 @@ export class AppointmentsComponent implements OnInit {
 
     const now = new Date();
     const startDate = new Date(appointment.startDate);
-    const maxArrivalDate = new Date(startDate.getTime() + 10 * 60 * 1000);
+    const maxArrivalDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
     return now >= startDate && now <= maxArrivalDate;
   }
@@ -812,14 +814,14 @@ export class AppointmentsComponent implements OnInit {
   isWithinExamStartWindow(exam: ExamDto): boolean {
     const now = new Date();
     const startDate = new Date(exam.startDate);
-    const maxStartDate = new Date(startDate.getTime() + 10 * 60 * 1000);
+    const maxStartDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
     return now >= startDate && now <= maxStartDate;
   }
 
   async iniciarExamen(exam: ExamDto): Promise<void> {
     if (!this.canStartExamByStatus(exam)) {
-      this.error = 'Solo se pueden iniciar examenes ACTIVO desde la hora programada hasta 10 minutos despues.';
+      this.error = 'Solo se pueden iniciar examenes ACTIVO desde la hora programada hasta 2 horas despues.';
       return;
     }
 
