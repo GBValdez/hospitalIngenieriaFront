@@ -20,6 +20,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '@auth/services/auth.service';
 import { catalogueInterface } from '@utils/commons.interface';
 import { CatalogueService } from '@utils/modules/catalogues/services/catalogue.service';
+import { ErrorAlertService } from '@utils/services/error-alert.service';
 import { VoiceAnnouncementService } from '@utils/services/voice-announcement.service';
 import {
   AppointmentCreationDto,
@@ -115,6 +116,7 @@ export class AppointmentsComponent implements OnInit {
     private appointmentsService: AppointmentsService,
     private examTypeDiagnosisService: ExamTypeDiagnosisService,
     private catalogueService: CatalogueService,
+    private errorAlertService: ErrorAlertService,
     private voiceAnnouncementService: VoiceAnnouncementService,
     private authService: AuthService,
     private fb: FormBuilder,
@@ -232,7 +234,7 @@ export class AppointmentsComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'No se pudo cargar las citas.';
+        this.setErrorAlert(err, 'No se pudo cargar las citas.');
         this.loading = false;
         console.error(err);
       },
@@ -293,7 +295,7 @@ export class AppointmentsComponent implements OnInit {
         this.loadingExams = false;
       },
       error: (err) => {
-        this.error = 'No se pudo cargar los examenes.';
+        this.setErrorAlert(err, 'No se pudo cargar los examenes.');
         this.loadingExams = false;
         console.error(err);
       },
@@ -394,14 +396,14 @@ export class AppointmentsComponent implements OnInit {
             this.loadAppointments(this.pageNumber, this.pageSize);
           },
           error: (err) => {
-            this.error = 'No se pudo agendar la cita.';
+            this.setErrorAlert(err, 'No se pudo agendar la cita.');
             this.saving = false;
             console.error(err);
           },
         });
       },
       error: (err) => {
-        this.error = 'No se pudo validar la disponibilidad.';
+        this.setErrorAlert(err, 'No se pudo validar la disponibilidad.');
         this.saving = false;
         console.error(err);
       },
@@ -469,12 +471,13 @@ export class AppointmentsComponent implements OnInit {
           this.emergencyPatientSearched = true;
           if (this.attendanceMode === 'walkIn') {
             this.error = 'El paciente no existe. Debe registrarse desde el formulario de registro del login.';
+            Swal.fire('Paciente no encontrado', this.error, 'warning');
             this.clearEmergencyPatientValidators();
           } else {
             this.setEmergencyPatientValidators();
           }
         } else {
-          this.error = err?.error?.error || err?.error?.message || 'No se pudo buscar el paciente.';
+          this.setErrorAlert(err, 'No se pudo buscar el paciente.');
         }
         this.searchingEmergencyPatient = false;
       },
@@ -576,10 +579,11 @@ export class AppointmentsComponent implements OnInit {
         this.loadAppointments(this.pageNumber, this.pageSize);
       },
       error: (err) => {
-        this.error = err?.error?.error || err?.error?.message || (
+        this.setErrorAlert(
+          err,
           isWalkIn
             ? 'No se pudo registrar la cita presencial.'
-            : 'No se pudo atender la emergencia.'
+            : 'No se pudo atender la emergencia.',
         );
         this.saving = false;
         console.error(err);
@@ -624,7 +628,11 @@ export class AppointmentsComponent implements OnInit {
         this.checkingAvailability = false;
       },
       error: (err) => {
-        this.availabilityMessage = 'No se pudo consultar la disponibilidad.';
+        this.availabilityMessage = this.errorAlertService.getMessage(
+          err,
+          'No se pudo consultar la disponibilidad.',
+        );
+        this.errorAlertService.show(err, 'No se pudo consultar la disponibilidad.');
         this.checkingAvailability = false;
         console.error(err);
       },
@@ -661,7 +669,7 @@ export class AppointmentsComponent implements OnInit {
         this.loadAppointments(this.pageNumber, this.pageSize);
       },
       error: (err) => {
-        this.error = 'No se pudo cancelar la cita.';
+        this.setErrorAlert(err, 'No se pudo cancelar la cita.');
         console.error(err);
       },
     });
@@ -705,7 +713,7 @@ export class AppointmentsComponent implements OnInit {
             this.loadAppointments(this.pageNumber, this.pageSize);
           },
           error: (err) => {
-            this.error = 'No se pudo reagendar la cita. Verifica el horario.';
+            this.setErrorAlert(err, 'No se pudo reagendar la cita. Verifica el horario.');
             console.error(err);
           },
         });
@@ -836,7 +844,7 @@ export class AppointmentsComponent implements OnInit {
         this.loadExams(this.examPageNumber, this.examPageSize);
       },
       error: (err) => {
-        this.error = err?.error?.error || err?.error?.message || 'No se pudo iniciar el examen.';
+        this.setErrorAlert(err, 'No se pudo iniciar el examen.');
         console.error(err);
       },
     });
@@ -865,7 +873,7 @@ export class AppointmentsComponent implements OnInit {
         });
       },
       error: (err) => {
-        this.error = 'No se pudieron cargar los diagnosticos permitidos para el examen.';
+        this.setErrorAlert(err, 'No se pudieron cargar los diagnosticos permitidos para el examen.');
         console.error(err);
       },
     });
@@ -907,7 +915,7 @@ export class AppointmentsComponent implements OnInit {
         this.loadExams(this.examPageNumber, this.examPageSize);
       },
       error: (err) => {
-        this.error = err?.error?.error || err?.error?.message || 'No se pudo finalizar el examen.';
+        this.setErrorAlert(err, 'No se pudo finalizar el examen.');
         console.error(err);
       },
     });
@@ -937,7 +945,7 @@ export class AppointmentsComponent implements OnInit {
         this.loadingHistory = false;
       },
       error: (err) => {
-        this.error = 'No se pudo cargar el historial de la cita.';
+        this.setErrorAlert(err, 'No se pudo cargar el historial de la cita.');
         this.loadingHistory = false;
         console.error(err);
       },
@@ -962,7 +970,7 @@ export class AppointmentsComponent implements OnInit {
         this.loadingHistory = false;
       },
       error: (err) => {
-        this.error = 'No se pudo cargar el historial del examen.';
+        this.setErrorAlert(err, 'No se pudo cargar el historial del examen.');
         this.loadingHistory = false;
         console.error(err);
       },
@@ -1043,7 +1051,7 @@ export class AppointmentsComponent implements OnInit {
         this.nationalityOptions = nationality.items;
       },
       error: (err) => {
-        this.error = 'No se pudieron cargar los catalogos para registrar pacientes.';
+        this.setErrorAlert(err, 'No se pudieron cargar los catalogos para registrar pacientes.');
         console.error(err);
       },
     });
@@ -1098,6 +1106,11 @@ export class AppointmentsComponent implements OnInit {
     if (closeDialog) {
       this.emergencyDialogRef?.close();
     }
+  }
+
+  private setErrorAlert(error: unknown, fallback: string): void {
+    this.error = this.errorAlertService.getMessage(error, fallback);
+    this.errorAlertService.show(error, fallback);
   }
 
   get selectedExamDiagnosisIds(): number[] {

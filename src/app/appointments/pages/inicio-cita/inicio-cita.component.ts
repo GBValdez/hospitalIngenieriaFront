@@ -13,6 +13,7 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { OnlyNumberInputDirective } from '@utils/directivas/only-number-input.directive';
+import { ErrorAlertService } from '@utils/services/error-alert.service';
 import { VoiceAnnouncementService } from '@utils/services/voice-announcement.service';
 import { AppointmentDto, InicioCitaDto } from '../../interfaces/appointments.interface';
 import { AppointmentsService } from '../../services/appointments.service';
@@ -38,6 +39,7 @@ export class InicioCitaComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public appointment: AppointmentDto,
     private appointmentsService: AppointmentsService,
+    private errorAlertService: ErrorAlertService,
     private voiceAnnouncementService: VoiceAnnouncementService,
     private dialogRef: MatDialogRef<InicioCitaComponent>,
     private fb: FormBuilder,
@@ -100,7 +102,8 @@ export class InicioCitaComponent {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        this.error = 'No se pudo registrar el inicio de la cita.';
+        this.error = this.errorAlertService.getMessage(err, 'No se pudo registrar el inicio de la cita.');
+        this.errorAlertService.show(err, 'No se pudo registrar el inicio de la cita.');
         this.saving = false;
         console.error(err);
       },

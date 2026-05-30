@@ -19,6 +19,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { catalogueInterface } from '@utils/commons.interface';
 import { OnlyNumberInputDirective } from '@utils/directivas/only-number-input.directive';
 import { CatalogueService } from '@utils/modules/catalogues/services/catalogue.service';
+import { ErrorAlertService } from '@utils/services/error-alert.service';
 import { MedicineDosageDto } from 'src/app/medicine-dosages/interfaces/medicine-dosage.interface';
 import { MedicineDosageService } from 'src/app/medicine-dosages/services/medicine-dosage.service';
 import {
@@ -64,6 +65,7 @@ export class FinalizarCitaComponent implements OnInit {
     private appointmentsService: AppointmentsService,
     private catalogueService: CatalogueService,
     private medicineDosageService: MedicineDosageService,
+    private errorAlertService: ErrorAlertService,
     private dialogRef: MatDialogRef<FinalizarCitaComponent>,
     private fb: FormBuilder,
   ) {
@@ -296,7 +298,8 @@ export class FinalizarCitaComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        this.error = err?.error?.error || err?.error?.message || 'No se pudo finalizar la cita.';
+        this.error = this.errorAlertService.getMessage(err, 'No se pudo finalizar la cita.');
+        this.errorAlertService.show(err, 'No se pudo finalizar la cita.');
         this.saving = false;
         console.error(err);
       },
@@ -319,7 +322,11 @@ export class FinalizarCitaComponent implements OnInit {
         this.loadingCatalogues = false;
       },
       error: (err) => {
-        this.medicineCatalogError = 'No se pudo cargar el catalogo de medicamentos.';
+        this.medicineCatalogError = this.errorAlertService.getMessage(
+          err,
+          'No se pudo cargar el catalogo de medicamentos.',
+        );
+        this.errorAlertService.show(err, 'No se pudo cargar el catalogo de medicamentos.');
         this.loadingCatalogues = false;
         console.error(err);
       },
