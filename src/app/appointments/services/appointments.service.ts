@@ -15,6 +15,7 @@ import {
   FinalizarCitaDto,
   InicioCitaDto,
   ReagendarDto,
+  WalkInAppointmentDto,
 } from '../interfaces/appointments.interface';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
@@ -57,6 +58,10 @@ export class AppointmentsService extends CommonsSvcService<
 
   atenderEmergencia(body: EmergencyAppointmentDto): Observable<AppointmentDto> {
     return this.http.post<AppointmentDto>(`${this.urlBase}/emergencia`, body);
+  }
+
+  registrarCitaPresencial(body: WalkInAppointmentDto): Observable<AppointmentDto> {
+    return this.http.post<AppointmentDto>(`${this.urlBase}/presencial`, body);
   }
 
   getHistorialEstados(id: number): Observable<AppointmentStatusHistoryDto[]> {

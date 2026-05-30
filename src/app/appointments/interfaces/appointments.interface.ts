@@ -16,7 +16,7 @@ export interface AppointmentDto {
   oxygenSaturation?: number;
   weight?: number;
   height?: number;
-  doctorId: number;
+  doctorId?: number;
   patientId: number;
   doctorName?: string;
   patientName?: string;
@@ -50,6 +50,12 @@ export interface EmergencyPatientDto {
 }
 
 export interface EmergencyAppointmentDto {
+  dpi: string;
+  reason: string;
+  patient?: EmergencyPatientDto;
+}
+
+export interface WalkInAppointmentDto {
   dpi: string;
   reason: string;
   patient?: EmergencyPatientDto;

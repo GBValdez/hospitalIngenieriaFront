@@ -16,6 +16,14 @@
       <mat-icon>emergency</mat-icon>
       Atender emergencia
     </button>
+    <button
+      *ngIf="canAttendWalkIn"
+      type="button"
+      (click)="abrirAtencionPresencial()"
+    >
+      <mat-icon>person_add</mat-icon>
+      Atender presencial
+    </button>
   </div>
 
   <p *ngIf="loading">Cargando citas...</p>
@@ -56,6 +64,7 @@
         <select formControlName="estado">
           <option value="">Todos</option>
           <option value="ACTIVO">Activo</option>
+          <option value="EN_ESPERA">En espera</option>
           <option value="EN_CURSO">En curso</option>
           <option value="FINALIZADA">Finalizada</option>
           <option value="REAGENDAR">Reagendar</option>
@@ -361,7 +370,7 @@
 
 <ng-template #emergencyDialog>
   <form class="appointment-form emergency-form" [formGroup]="emergencyForm" (ngSubmit)="atenderEmergencia()">
-    <h2>Atender emergencia</h2>
+    <h2>{{ attendanceMode === "walkIn" ? "Atender paciente presencial" : "Atender emergencia" }}</h2>
 
     <div class="dpi-search">
       <label>
@@ -385,7 +394,7 @@
       <small>DPI {{ emergencyPatient.dpi }}</small>
     </section>
 
-    <section *ngIf="emergencyPatientSearched && !emergencyPatient" class="patient-registration">
+    <section *ngIf="attendanceMode === 'emergency' && emergencyPatientSearched && !emergencyPatient" class="patient-registration">
       <p class="field-error">No se encontro el paciente. Completa sus datos para registrarlo.</p>
 
       <label>
@@ -423,7 +432,7 @@
     </section>
 
     <label>
-      Motivo de emergencia
+      {{ attendanceMode === "walkIn" ? "Motivo de consulta" : "Motivo de emergencia" }}
       <textarea rows="3" formControlName="reason" maxlength="250"></textarea>
     </label>
     <p *ngIf="emergencyForm.get('reason')?.touched && emergencyForm.get('reason')?.hasError('required')" class="field-error">
@@ -432,7 +441,13 @@
 
     <div class="form-actions">
       <button type="submit" [disabled]="saving || searchingEmergencyPatient">
-        {{ saving ? "Registrando..." : "Atender emergencia" }}
+        {{
+          saving
+            ? "Registrando..."
+            : attendanceMode === "walkIn"
+              ? "Registrar presencial"
+              : "Atender emergencia"
+        }}
       </button>
       <button type="button" class="secondary" (click)="cancelarEmergencia()">
         Cancelar

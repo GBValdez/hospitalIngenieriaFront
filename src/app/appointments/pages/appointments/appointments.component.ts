@@ -31,6 +31,7 @@ import {
   ExamStatusHistoryDto,
   FinalizarExamDto,
   ReagendarDto,
+  WalkInAppointmentDto,
 } from '../../interfaces/appointments.interface';
 import { InicioCitaComponent } from '../inicio-cita/inicio-cita.component';
 import {
@@ -94,6 +95,7 @@ export class AppointmentsComponent implements OnInit {
   emergencyPatient?: EmergencyPatientResultDto;
   emergencyPatientSearched = false;
   searchingEmergencyPatient = false;
+  attendanceMode: 'emergency' | 'walkIn' = 'emergency';
   sexOptions: catalogueInterface[] = [];
   nationalityOptions: catalogueInterface[] = [];
   allowedExamDiagnoses: ExamTypeDiagnosisDto[] = [];
@@ -193,6 +195,10 @@ export class AppointmentsComponent implements OnInit {
   }
 
   get canAttendEmergency(): boolean {
+    return this.authService.hasRoles(['NURSE', 'ADMINISTRATOR']);
+  }
+
+  get canAttendWalkIn(): boolean {
     return this.authService.hasRoles(['NURSE', 'ADMINISTRATOR']);
   }
 
@@ -413,7 +419,20 @@ export class AppointmentsComponent implements OnInit {
   }
 
   abrirAtencionEmergencia(): void {
+    this.attendanceMode = 'emergency';
     this.resetEmergencyForm(false);
+    this.loadEmergencyCatalogues();
+    this.emergencyDialogRef = this.dialog.open(this.emergencyDialog, {
+      width: '680px',
+      maxWidth: 'calc(100vw - 32px)',
+      autoFocus: false,
+    });
+  }
+
+  abrirAtencionPresencial(): void {
+    this.attendanceMode = 'walkIn';
+    this.resetEmergencyForm(false);
+    this.emergencyForm.patchValue({ reason: 'Consulta presencial' });
     this.loadEmergencyCatalogues();
     this.emergencyDialogRef = this.dialog.open(this.emergencyDialog, {
       width: '680px',
@@ -446,7 +465,12 @@ export class AppointmentsComponent implements OnInit {
       error: (err) => {
         if (err?.status === 404) {
           this.emergencyPatientSearched = true;
-          this.setEmergencyPatientValidators();
+          if (this.attendanceMode === 'walkIn') {
+            this.error = 'El paciente no existe. Debe registrarse desde el formulario de registro del login.';
+            this.clearEmergencyPatientValidators();
+          } else {
+            this.setEmergencyPatientValidators();
+          }
         } else {
           this.error = err?.error?.error || err?.error?.message || 'No se pudo buscar el paciente.';
         }
@@ -465,6 +489,11 @@ export class AppointmentsComponent implements OnInit {
       return;
     }
 
+    if (!this.emergencyPatient && this.emergencyPatientSearched && this.attendanceMode === 'walkIn') {
+      this.error = 'El paciente no existe. Debe registrarse desde el formulario de registro del login.';
+      return;
+    }
+
     if (!this.emergencyPatient && this.emergencyPatientSearched) {
       this.setEmergencyPatientValidators();
     }
@@ -474,25 +503,32 @@ export class AppointmentsComponent implements OnInit {
       return;
     }
 
+    const isWalkIn = this.attendanceMode === 'walkIn';
     const payment = await Swal.fire({
       title: 'Simulacion de pago',
-      text: 'Confirma el pago para registrar la atencion de emergencia.',
+      text: isWalkIn
+        ? 'Confirma el pago para registrar la cita presencial.'
+        : 'Confirma el pago para registrar la atencion de emergencia.',
       icon: 'info',
       showCancelButton: true,
-      confirmButtonText: 'Pagar emergencia',
+      confirmButtonText: isWalkIn ? 'Pagar consulta' : 'Pagar emergencia',
       cancelButtonText: 'Cancelar',
     });
 
     if (!payment.isConfirmed) {
-      this.error = 'La emergencia no fue registrada porque no se confirmo el pago.';
+      this.error = isWalkIn
+        ? 'La cita presencial no fue registrada porque no se confirmo el pago.'
+        : 'La emergencia no fue registrada porque no se confirmo el pago.';
       return;
     }
 
     const result = await Swal.fire({
-      title: 'Deseas atender esta emergencia?',
+      title: isWalkIn
+        ? 'Deseas registrar esta cita presencial?'
+        : 'Deseas atender esta emergencia?',
       icon: 'question',
       showCancelButton: true,
-      confirmButtonText: 'Atender',
+      confirmButtonText: isWalkIn ? 'Registrar' : 'Atender',
       cancelButtonText: 'Cancelar',
     });
 
@@ -501,12 +537,12 @@ export class AppointmentsComponent implements OnInit {
     }
 
     const value = this.emergencyForm.value;
-    const payload: EmergencyAppointmentDto = {
+    const payload: EmergencyAppointmentDto | WalkInAppointmentDto = {
       dpi: String(value.dpi).trim(),
       reason: String(value.reason).trim(),
     };
 
-    if (!this.emergencyPatient) {
+    if (!this.emergencyPatient && !isWalkIn) {
       payload.patient = {
         name: String(value.name).trim(),
         direction: String(value.direction).trim(),
@@ -517,16 +553,32 @@ export class AppointmentsComponent implements OnInit {
     }
 
     this.saving = true;
-    this.appointmentsService.atenderEmergencia(payload).subscribe({
+    const request = isWalkIn
+      ? this.appointmentsService.registrarCitaPresencial(payload)
+      : this.appointmentsService.atenderEmergencia(payload);
+
+    request.subscribe({
       next: () => {
-        this.success = 'Emergencia registrada e iniciada correctamente.';
+        this.success = isWalkIn
+          ? 'Cita presencial registrada correctamente.'
+          : 'Emergencia registrada e iniciada correctamente.';
         this.saving = false;
         this.emergencyDialogRef?.close();
-        Swal.fire('Emergencia iniciada', 'La cita de emergencia quedo en curso.', 'success');
+        Swal.fire(
+          isWalkIn ? 'Paciente en espera' : 'Emergencia iniciada',
+          isWalkIn
+            ? 'La cita presencial quedo registrada para el primer medico disponible.'
+            : 'La cita de emergencia quedo en curso.',
+          'success',
+        );
         this.loadAppointments(this.pageNumber, this.pageSize);
       },
       error: (err) => {
-        this.error = err?.error?.error || err?.error?.message || 'No se pudo atender la emergencia.';
+        this.error = err?.error?.error || err?.error?.message || (
+          isWalkIn
+            ? 'No se pudo registrar la cita presencial.'
+            : 'No se pudo atender la emergencia.'
+        );
         this.saving = false;
         console.error(err);
       },
@@ -708,6 +760,10 @@ export class AppointmentsComponent implements OnInit {
   }
 
   isWithinStartWindow(appointment: AppointmentDto): boolean {
+    if (appointment.status === 'EN_ESPERA') {
+      return true;
+    }
+
     const now = new Date();
     const startDate = new Date(appointment.startDate);
     const maxArrivalDate = new Date(startDate.getTime() + 10 * 60 * 1000);
@@ -720,7 +776,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   canStartAppointmentByStatus(appointment: AppointmentDto): boolean {
-    return appointment.status === 'ACTIVO' || appointment.status === 'REAGENDAR';
+    return appointment.status === 'ACTIVO' || appointment.status === 'REAGENDAR' || appointment.status === 'EN_ESPERA';
   }
 
   canFinishAppointmentByStatus(appointment: AppointmentDto): boolean {
