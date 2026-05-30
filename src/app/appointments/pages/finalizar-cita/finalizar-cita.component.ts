@@ -218,6 +218,33 @@ export class FinalizarCitaComponent implements OnInit {
       return;
     }
 
+    let requiresLabExams = Boolean(this.form.value.requiresLabExams);
+    if (requiresLabExams) {
+      const examPayment = await Swal.fire({
+        title: 'Simulacion de pago de examenes',
+        text: 'El doctor solicito examenes de laboratorio. Deseas confirmar el pago para programarlos?',
+        icon: 'info',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Pagar examenes',
+        denyButtonText: 'No pagar examenes',
+        cancelButtonText: 'Cancelar',
+      });
+
+      if (examPayment.isDismissed) {
+        return;
+      }
+
+      if (examPayment.isDenied) {
+        requiresLabExams = false;
+        await Swal.fire(
+          'Examenes no programados',
+          'La consulta se finalizara sin agendar examenes de laboratorio.',
+          'info',
+        );
+      }
+    }
+
     const result = await Swal.fire({
       title: 'Deseas finalizar esta cita?',
       text: 'Se guardara la atencion, recetas, examenes y reagendamiento si fueron indicados.',
@@ -232,7 +259,6 @@ export class FinalizarCitaComponent implements OnInit {
     }
 
     const requiresRecipe = Boolean(this.form.value.requiresRecipe);
-    const requiresLabExams = Boolean(this.form.value.requiresLabExams);
     const requiresReschedule = Boolean(this.form.value.requiresReschedule);
     const payload: FinalizarCitaDto = {
       appointmentId: this.appointment.id,

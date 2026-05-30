@@ -211,16 +211,17 @@ export class DespacharMedicinaComponent implements OnInit {
       return;
     }
 
-    const result = await Swal.fire({
-      title: 'Deseas despachar la medicina?',
-      text: `Total a pagar: Q${this.total.toFixed(2)}`,
-      icon: 'question',
+    const payment = await Swal.fire({
+      title: 'Simulacion de pago',
+      text: `Total a pagar por medicamentos: Q${this.total.toFixed(2)}`,
+      icon: 'info',
       showCancelButton: true,
-      confirmButtonText: 'Despachar',
+      confirmButtonText: 'Pagar y despachar',
       cancelButtonText: 'Cancelar',
     });
 
-    if (!result.isConfirmed) {
+    if (!payment.isConfirmed) {
+      this.error = 'El despacho fue cancelado porque no se confirmo el pago.';
       return;
     }
 

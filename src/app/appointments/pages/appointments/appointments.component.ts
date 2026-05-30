@@ -321,6 +321,20 @@ export class AppointmentsComponent implements OnInit {
       return;
     }
 
+    const payment = await Swal.fire({
+      title: 'Simulacion de pago',
+      text: 'Para agendar la cita debes confirmar el pago de la consulta.',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Pagar y continuar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!payment.isConfirmed) {
+      this.error = 'El agendamiento fue cancelado porque no se confirmo el pago.';
+      return;
+    }
+
     const result = await Swal.fire({
       title: 'Deseas agendar esta cita?',
       icon: 'question',
@@ -457,6 +471,20 @@ export class AppointmentsComponent implements OnInit {
 
     if (this.emergencyForm.invalid) {
       this.emergencyForm.markAllAsTouched();
+      return;
+    }
+
+    const payment = await Swal.fire({
+      title: 'Simulacion de pago',
+      text: 'Confirma el pago para registrar la atencion de emergencia.',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Pagar emergencia',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!payment.isConfirmed) {
+      this.error = 'La emergencia no fue registrada porque no se confirmo el pago.';
       return;
     }
 
