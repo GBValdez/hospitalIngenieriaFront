@@ -1,29 +1,35 @@
 <section class="appointments-list">
   <div class="page-header">
     <h1>Gestion de citas</h1>
-    <button
-      *ngIf="canScheduleAppointment"
-      type="button"
-      (click)="abrirFormularioAgendar()"
-    >
-      Agendar cita
-    </button>
-    <button
-      *ngIf="canAttendEmergency"
-      type="button"
-      (click)="abrirAtencionEmergencia()"
-    >
-      <mat-icon>emergency</mat-icon>
-      Atender emergencia
-    </button>
-    <button
-      *ngIf="canAttendWalkIn"
-      type="button"
-      (click)="abrirAtencionPresencial()"
-    >
-      <mat-icon>person_add</mat-icon>
-      Atender presencial
-    </button>
+    <div class="header-actions">
+      <button
+        *ngIf="canScheduleAppointment"
+        type="button"
+        class="action-button primary-action"
+        (click)="abrirFormularioAgendar()"
+      >
+        <mat-icon>event_available</mat-icon>
+        <span>Agendar cita</span>
+      </button>
+      <button
+        *ngIf="canAttendEmergency"
+        type="button"
+        class="action-button emergency-action"
+        (click)="abrirAtencionEmergencia()"
+      >
+        <mat-icon>emergency</mat-icon>
+        <span>Atender emergencia</span>
+      </button>
+      <button
+        *ngIf="canAttendWalkIn"
+        type="button"
+        class="action-button walk-in-action"
+        (click)="abrirAtencionPresencial()"
+      >
+        <mat-icon>person_add</mat-icon>
+        <span>Atender presencial</span>
+      </button>
+    </div>
   </div>
 
   <p *ngIf="loading">Cargando citas...</p>
@@ -371,6 +377,8 @@
 <ng-template #emergencyDialog>
   <form class="appointment-form emergency-form" [formGroup]="emergencyForm" (ngSubmit)="atenderEmergencia()">
     <h2>{{ attendanceMode === "walkIn" ? "Atender paciente presencial" : "Atender emergencia" }}</h2>
+
+    <p *ngIf="emergencyError" class="modal-error">{{ emergencyError }}</p>
 
     <div class="dpi-search">
       <label>

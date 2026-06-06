@@ -80,6 +80,7 @@ export class AppointmentsComponent implements OnInit {
   saving = false;
   checkingAvailability = false;
   error = '';
+  emergencyError = '';
   success = '';
   pageNumber = 1;
   pageSize = 10;
@@ -447,7 +448,7 @@ export class AppointmentsComponent implements OnInit {
 
   buscarPacienteEmergencia(): void {
     this.success = '';
-    this.error = '';
+    this.emergencyError = '';
     this.emergencyPatient = undefined;
     this.emergencyPatientSearched = false;
     this.clearEmergencyPatientValidators();
@@ -470,14 +471,19 @@ export class AppointmentsComponent implements OnInit {
         if (err?.status === 404) {
           this.emergencyPatientSearched = true;
           if (this.attendanceMode === 'walkIn') {
-            this.error = 'El paciente no existe. Debe registrarse desde el formulario de registro del login.';
-            Swal.fire('Paciente no encontrado', this.error, 'warning');
+            this.setEmergencyError(
+              'El paciente no existe. Debe registrarse desde el formulario de registro del login.',
+              'Paciente no encontrado',
+              'warning',
+            );
             this.clearEmergencyPatientValidators();
           } else {
             this.setEmergencyPatientValidators();
           }
         } else {
-          this.setErrorAlert(err, 'No se pudo buscar el paciente.');
+          this.setEmergencyError(
+            this.errorAlertService.getMessage(err, 'No se pudo buscar el paciente.'),
+          );
         }
         this.searchingEmergencyPatient = false;
       },
@@ -486,16 +492,26 @@ export class AppointmentsComponent implements OnInit {
 
   async atenderEmergencia(): Promise<void> {
     this.success = '';
-    this.error = '';
+    this.emergencyError = '';
 
     if (!this.emergencyPatientSearched) {
-      this.error = 'Busca el paciente por DPI antes de atender la emergencia.';
+      this.setEmergencyError(
+        this.attendanceMode === 'walkIn'
+          ? 'Busca el paciente por DPI antes de registrar la cita presencial.'
+          : 'Busca el paciente por DPI antes de atender la emergencia.',
+        'Paciente requerido',
+        'warning',
+      );
       this.emergencyForm.get('dpi')?.markAsTouched();
       return;
     }
 
     if (!this.emergencyPatient && this.emergencyPatientSearched && this.attendanceMode === 'walkIn') {
-      this.error = 'El paciente no existe. Debe registrarse desde el formulario de registro del login.';
+      this.setEmergencyError(
+        'El paciente no existe. Debe registrarse desde el formulario de registro del login.',
+        'Paciente no encontrado',
+        'warning',
+      );
       return;
     }
 
@@ -505,6 +521,7 @@ export class AppointmentsComponent implements OnInit {
 
     if (this.emergencyForm.invalid) {
       this.emergencyForm.markAllAsTouched();
+      this.emergencyError = 'Revisa los campos marcados antes de continuar.';
       return;
     }
 
@@ -521,7 +538,7 @@ export class AppointmentsComponent implements OnInit {
     });
 
     if (!payment.isConfirmed) {
-      this.error = isWalkIn
+      this.emergencyError = isWalkIn
         ? 'La cita presencial no fue registrada porque no se confirmo el pago.'
         : 'La emergencia no fue registrada porque no se confirmo el pago.';
       return;
@@ -579,11 +596,17 @@ export class AppointmentsComponent implements OnInit {
         this.loadAppointments(this.pageNumber, this.pageSize);
       },
       error: (err) => {
-        this.setErrorAlert(
-          err,
+        this.setEmergencyError(
+          this.errorAlertService.getMessage(
+            err,
+            isWalkIn
+              ? 'No se pudo registrar la cita presencial.'
+              : 'No se pudo atender la emergencia.',
+          ),
           isWalkIn
             ? 'No se pudo registrar la cita presencial.'
             : 'No se pudo atender la emergencia.',
+          'error',
         );
         this.saving = false;
         console.error(err);
@@ -1105,9 +1128,19 @@ export class AppointmentsComponent implements OnInit {
     this.clearEmergencyPatientValidators();
     this.success = '';
     this.error = '';
+    this.emergencyError = '';
     if (closeDialog) {
       this.emergencyDialogRef?.close();
     }
+  }
+
+  private setEmergencyError(
+    message: string,
+    title = 'Ocurrio un error',
+    icon: 'error' | 'warning' = 'error',
+  ): void {
+    this.emergencyError = message;
+    Swal.fire(title, message, icon);
   }
 
   private setErrorAlert(error: unknown, fallback: string): void {
