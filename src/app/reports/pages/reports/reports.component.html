@@ -67,37 +67,37 @@
       <section class="report-grid">
         <article class="panel">
           <h2>Citas por estado</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.appointmentsByStatus }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'appointmentsByStatus' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Citas por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.appointmentsByDoctor }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'appointmentsByDoctor' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Diagnósticos más frecuentes</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.topDiagnoses }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'topDiagnoses' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Medicamentos más recetados</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.topPrescribedMedicines }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'topPrescribedMedicines' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Medicamentos más despachados</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.topDispatchedMedicines, amountType: 'currency' }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'topDispatchedMedicines', amountType: 'currency' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Exámenes por estado</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.examsByStatus }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'examsByStatus' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Exámenes por tipo</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.examsByType }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'examsByType' }"></ng-container>
         </article>
 
         <article class="panel">
@@ -130,71 +130,75 @@
       <section class="report-grid doctor-grid">
         <article class="panel">
           <h2>Clientes atendidos por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.patientsAttendedByDoctor }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'patientsAttendedByDoctor' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Citas por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.appointmentsByDoctor }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'doctorAppointments' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Citas finalizadas por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.finalizedAppointmentsByDoctor }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'finalizedAppointmentsByDoctor' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Emergencias atendidas por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.emergencyAppointmentsByDoctor }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'emergencyAppointmentsByDoctor' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Tiempo promedio de atención</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.averageAttentionMinutesByDoctor, amountType: 'minutes' }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'averageAttentionMinutesByDoctor', valueType: 'amount', amountType: 'minutes' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Recetas emitidas por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.recipesByDoctor }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'recipesByDoctor' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Medicamentos recetados por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.prescribedMedicinesByDoctor }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'prescribedMedicinesByDoctor' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Medicamentos despachados por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.dispatchedMedicinesByDoctor, amountType: 'currency' }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'dispatchedMedicinesByDoctor', amountType: 'currency' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Diagnósticos por doctor</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.diagnosesByDoctor }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'diagnosesByDoctor' }"></ng-container>
         </article>
 
         <article class="panel">
           <h2>Citas por especialidad</h2>
-          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.appointmentsBySpecialty }"></ng-container>
+          <ng-container *ngTemplateOutlet="chartPanel; context: { key: 'appointmentsBySpecialty' }"></ng-container>
         </article>
       </section>
     </section>
   </ng-container>
 </section>
 
-<ng-template #barList let-items="items" let-amountType="amountType">
-  <p *ngIf="items.length === 0">Sin datos para el período.</p>
-  <div class="bar-list" *ngIf="items.length > 0">
-    <div class="bar-row" *ngFor="let item of items; trackBy: trackName">
-      <div class="bar-label">
-        <span>{{ item.name }}</span>
-        <strong>{{ item.count }}</strong>
-      </div>
-      <div class="bar-track">
-        <div class="bar-fill" [style.width.%]="percent(item, items)"></div>
-      </div>
-      <small *ngIf="item.amount && amountType === 'currency'">Q{{ item.amount | number: "1.2-2" }}</small>
-      <small *ngIf="item.amount && amountType === 'minutes'">{{ item.amount | number: "1.0-2" }} min promedio</small>
+<ng-template #chartPanel let-key="key" let-valueType="valueType" let-amountType="amountType">
+  <p *ngIf="chartItems(key).length === 0">Sin datos para el período.</p>
+  <ng-container *ngIf="chartItems(key).length > 0">
+    <div class="chart-shell">
+      <canvas
+        #reportChart
+        [attr.data-chart-key]="key"
+        [attr.data-value-type]="valueType || 'count'"
+        [attr.data-amount-type]="amountType || ''">
+      </canvas>
     </div>
-  </div>
+    <div class="chart-summary">
+      <div class="summary-row" *ngFor="let item of chartItems(key); trackBy: trackName">
+        <span>{{ item.name }}</span>
+        <strong>{{ displayValue(item, valueType || 'count', amountType) }}</strong>
+        <small *ngIf="item.amount && amountType === 'currency'">Q{{ item.amount | number: "1.2-2" }}</small>
+      </div>
+    </div>
+  </ng-container>
 </ng-template>
