@@ -1,7 +1,7 @@
 <section class="reports-page">
   <header class="page-header">
     <div>
-      <h1>Reportería</h1>
+      <h1>{{ isDoctorReport ? "Reportería de doctores" : "Reportería general" }}</h1>
       <span *ngIf="report">
         {{ report.startDateFrom | date: "mediumDate" }} - {{ report.startDateTo | date: "mediumDate" }}
       </span>
@@ -39,156 +39,147 @@
   <p *ngIf="loading">Cargando reportería...</p>
   <p *ngIf="error" class="error">{{ error }}</p>
 
-  <mat-tab-group
-    *ngIf="report && !loading"
-    class="report-tabs"
-    animationDuration="180ms"
-    [selectedIndex]="selectedTabIndex"
-    (selectedTabChange)="changeSection($event)">
-    <mat-tab label="Reportería general">
-      <section class="tab-content">
-        <section class="kpi-grid">
-          <article class="kpi">
-            <span>Citas</span>
-            <strong>{{ report.totals.appointments }}</strong>
-            <small>{{ report.totals.finalizedAppointments }} finalizadas</small>
-          </article>
-          <article class="kpi">
-            <span>Exámenes</span>
-            <strong>{{ report.totals.exams }}</strong>
-            <small>{{ report.totals.finalizedExams }} finalizados</small>
-          </article>
-          <article class="kpi">
-            <span>Recetas</span>
-            <strong>{{ report.totals.recipes }}</strong>
-            <small>{{ report.totals.dispatchedUnits }} unidades despachadas</small>
-          </article>
-          <article class="kpi">
-            <span>Ingresos por despacho</span>
-            <strong>Q{{ report.totals.dispatchRevenue | number: "1.2-2" }}</strong>
-            <small>{{ report.totals.lowStockMedicines }} medicamentos con stock bajo</small>
-          </article>
-        </section>
-
-        <section class="report-grid">
-          <article class="panel">
-            <h2>Citas por estado</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.appointmentsByStatus }"></ng-container>
-          </article>
-
-          <article class="panel">
-            <h2>Citas por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.appointmentsByDoctor }"></ng-container>
-          </article>
-
-          <article class="panel">
-            <h2>Diagnósticos más frecuentes</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.topDiagnoses }"></ng-container>
-          </article>
-
-          <article class="panel">
-            <h2>Medicamentos más recetados</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.topPrescribedMedicines }"></ng-container>
-          </article>
-
-          <article class="panel">
-            <h2>Medicamentos más despachados</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.topDispatchedMedicines, amountType: 'currency' }"></ng-container>
-          </article>
-
-          <article class="panel">
-            <h2>Exámenes por estado</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.examsByStatus }"></ng-container>
-          </article>
-
-          <article class="panel">
-            <h2>Exámenes por tipo</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.examsByType }"></ng-container>
-          </article>
-
-          <article class="panel">
-            <h2>Inventario bajo</h2>
-            <p *ngIf="report.lowStockMedicines.length === 0">No hay medicamentos por debajo del límite.</p>
-            <table mat-table [dataSource]="report.lowStockMedicines" *ngIf="report.lowStockMedicines.length > 0">
-              <ng-container matColumnDef="medicineName">
-                <th mat-header-cell *matHeaderCellDef>Medicamento</th>
-                <td mat-cell *matCellDef="let item">{{ item.medicineName }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="stock">
-                <th mat-header-cell *matHeaderCellDef>Stock</th>
-                <td mat-cell *matCellDef="let item">{{ item.stock }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="price">
-                <th mat-header-cell *matHeaderCellDef>Precio</th>
-                <td mat-cell *matCellDef="let item">Q{{ item.price | number: "1.2-2" }}</td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="lowStockColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: lowStockColumns"></tr>
-            </table>
-          </article>
-        </section>
+  <ng-container *ngIf="report && !loading">
+    <section class="report-section" *ngIf="!isDoctorReport">
+      <section class="kpi-grid">
+        <article class="kpi">
+          <span>Citas</span>
+          <strong>{{ report.totals.appointments }}</strong>
+          <small>{{ report.totals.finalizedAppointments }} finalizadas</small>
+        </article>
+        <article class="kpi">
+          <span>Exámenes</span>
+          <strong>{{ report.totals.exams }}</strong>
+          <small>{{ report.totals.finalizedExams }} finalizados</small>
+        </article>
+        <article class="kpi">
+          <span>Recetas</span>
+          <strong>{{ report.totals.recipes }}</strong>
+          <small>{{ report.totals.dispatchedUnits }} unidades despachadas</small>
+        </article>
+        <article class="kpi">
+          <span>Ingresos por despacho</span>
+          <strong>Q{{ report.totals.dispatchRevenue | number: "1.2-2" }}</strong>
+          <small>{{ report.totals.lowStockMedicines }} medicamentos con stock bajo</small>
+        </article>
       </section>
-    </mat-tab>
 
-    <mat-tab label="Doctores">
-      <section class="tab-content">
-        <section class="report-grid doctor-grid">
-          <article class="panel">
-            <h2>Clientes atendidos por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.patientsAttendedByDoctor }"></ng-container>
-          </article>
+      <section class="report-grid">
+        <article class="panel">
+          <h2>Citas por estado</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.appointmentsByStatus }"></ng-container>
+        </article>
 
-          <article class="panel">
-            <h2>Citas por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.appointmentsByDoctor }"></ng-container>
-          </article>
+        <article class="panel">
+          <h2>Citas por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.appointmentsByDoctor }"></ng-container>
+        </article>
 
-          <article class="panel">
-            <h2>Citas finalizadas por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.finalizedAppointmentsByDoctor }"></ng-container>
-          </article>
+        <article class="panel">
+          <h2>Diagnósticos más frecuentes</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.topDiagnoses }"></ng-container>
+        </article>
 
-          <article class="panel">
-            <h2>Emergencias atendidas por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.emergencyAppointmentsByDoctor }"></ng-container>
-          </article>
+        <article class="panel">
+          <h2>Medicamentos más recetados</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.topPrescribedMedicines }"></ng-container>
+        </article>
 
-          <article class="panel">
-            <h2>Tiempo promedio de atención</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.averageAttentionMinutesByDoctor, amountType: 'minutes' }"></ng-container>
-          </article>
+        <article class="panel">
+          <h2>Medicamentos más despachados</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.topDispatchedMedicines, amountType: 'currency' }"></ng-container>
+        </article>
 
-          <article class="panel">
-            <h2>Recetas emitidas por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.recipesByDoctor }"></ng-container>
-          </article>
+        <article class="panel">
+          <h2>Exámenes por estado</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.examsByStatus }"></ng-container>
+        </article>
 
-          <article class="panel">
-            <h2>Medicamentos recetados por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.prescribedMedicinesByDoctor }"></ng-container>
-          </article>
+        <article class="panel">
+          <h2>Exámenes por tipo</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.examsByType }"></ng-container>
+        </article>
 
-          <article class="panel">
-            <h2>Medicamentos despachados por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.dispatchedMedicinesByDoctor, amountType: 'currency' }"></ng-container>
-          </article>
+        <article class="panel">
+          <h2>Inventario bajo</h2>
+          <p *ngIf="report.lowStockMedicines.length === 0">No hay medicamentos por debajo del límite.</p>
+          <table mat-table [dataSource]="report.lowStockMedicines" *ngIf="report.lowStockMedicines.length > 0">
+            <ng-container matColumnDef="medicineName">
+              <th mat-header-cell *matHeaderCellDef>Medicamento</th>
+              <td mat-cell *matCellDef="let item">{{ item.medicineName }}</td>
+            </ng-container>
 
-          <article class="panel">
-            <h2>Diagnósticos por doctor</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.diagnosesByDoctor }"></ng-container>
-          </article>
+            <ng-container matColumnDef="stock">
+              <th mat-header-cell *matHeaderCellDef>Stock</th>
+              <td mat-cell *matCellDef="let item">{{ item.stock }}</td>
+            </ng-container>
 
-          <article class="panel">
-            <h2>Citas por especialidad</h2>
-            <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.appointmentsBySpecialty }"></ng-container>
-          </article>
-        </section>
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef>Precio</th>
+              <td mat-cell *matCellDef="let item">Q{{ item.price | number: "1.2-2" }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="lowStockColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: lowStockColumns"></tr>
+          </table>
+        </article>
       </section>
-    </mat-tab>
-  </mat-tab-group>
+    </section>
+
+    <section class="report-section" *ngIf="isDoctorReport">
+      <section class="report-grid doctor-grid">
+        <article class="panel">
+          <h2>Clientes atendidos por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.patientsAttendedByDoctor }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Citas por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.appointmentsByDoctor }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Citas finalizadas por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.finalizedAppointmentsByDoctor }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Emergencias atendidas por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.emergencyAppointmentsByDoctor }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Tiempo promedio de atención</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.averageAttentionMinutesByDoctor, amountType: 'minutes' }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Recetas emitidas por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.recipesByDoctor }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Medicamentos recetados por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.prescribedMedicinesByDoctor }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Medicamentos despachados por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.dispatchedMedicinesByDoctor, amountType: 'currency' }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Diagnósticos por doctor</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.diagnosesByDoctor }"></ng-container>
+        </article>
+
+        <article class="panel">
+          <h2>Citas por especialidad</h2>
+          <ng-container *ngTemplateOutlet="barList; context: { items: report.doctorReports.appointmentsBySpecialty }"></ng-container>
+        </article>
+      </section>
+    </section>
+  </ng-container>
 </section>
 
 <ng-template #barList let-items="items" let-amountType="amountType">
