@@ -69,7 +69,20 @@ export class GeneralMenuComponent implements OnInit {
           {
             text: 'Reportería',
             icon: 'analytics',
-            click: '/session/reports',
+            child: [
+              {
+                text: 'General',
+                icon: 'assessment',
+                click: '/session/reports',
+                show: true,
+              },
+              {
+                text: 'Doctores',
+                icon: 'medical_services',
+                click: '/session/reports/doctors',
+                show: true,
+              },
+            ],
             show: true,
           },
           {

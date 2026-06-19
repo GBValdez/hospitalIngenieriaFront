@@ -10,6 +10,7 @@ export interface ReportSummaryDto {
   topPrescribedMedicines: ReportCountDto[];
   topDispatchedMedicines: ReportCountDto[];
   lowStockMedicines: LowStockMedicineDto[];
+  doctorReports: DoctorReportsDto;
 }
 
 export interface ReportTotalsDto {
@@ -27,6 +28,19 @@ export interface ReportCountDto {
   name: string;
   count: number;
   amount: number;
+}
+
+export interface DoctorReportsDto {
+  patientsAttendedByDoctor: ReportCountDto[];
+  appointmentsByDoctor: ReportCountDto[];
+  finalizedAppointmentsByDoctor: ReportCountDto[];
+  emergencyAppointmentsByDoctor: ReportCountDto[];
+  averageAttentionMinutesByDoctor: ReportCountDto[];
+  recipesByDoctor: ReportCountDto[];
+  prescribedMedicinesByDoctor: ReportCountDto[];
+  dispatchedMedicinesByDoctor: ReportCountDto[];
+  diagnosesByDoctor: ReportCountDto[];
+  appointmentsBySpecialty: ReportCountDto[];
 }
 
 export interface LowStockMedicineDto {

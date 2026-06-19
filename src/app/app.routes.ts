@@ -196,6 +196,16 @@ export const routes: Routes = [
         title: 'Reportería',
       },
       {
+        path: 'reports/doctors',
+        loadComponent: () =>
+          import('./reports/pages/reports/reports.component').then(
+            (m) => m.ReportsComponent,
+          ),
+        data: { isProtect: 20, roles: ['ADMINISTRATOR'] },
+        canActivate: [AuthGuard],
+        title: 'Reportería de doctores',
+      },
+      {
         path: 'medicine-dosages',
         loadComponent: () =>
           import(

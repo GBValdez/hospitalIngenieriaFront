@@ -5,7 +5,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatTabChangeEvent } from '@angular/material/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
+import { Router } from '@angular/router';
 import {
   LowStockMedicineDto,
   ReportCountDto,
@@ -23,6 +26,7 @@ import { ReportsService } from '../../services/reports.service';
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatTabsModule,
     MatTableModule,
   ],
   templateUrl: './reports.component.html',
@@ -33,11 +37,13 @@ export class ReportsComponent implements OnInit {
   report?: ReportSummaryDto;
   loading = false;
   error = '';
+  selectedTabIndex = 0;
   lowStockColumns = ['medicineName', 'stock', 'price'];
 
   constructor(
     private reportsService: ReportsService,
     private fb: FormBuilder,
+    private router: Router,
   ) {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -49,6 +55,7 @@ export class ReportsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.selectedTabIndex = this.router.url.includes('/reports/doctors') ? 1 : 0;
     this.loadReport();
   }
 
@@ -92,6 +99,13 @@ export class ReportsComponent implements OnInit {
 
   trackMedicine(_: number, item: LowStockMedicineDto): number {
     return item.medicineId;
+  }
+
+  changeSection(event: MatTabChangeEvent): void {
+    const route = event.index === 1 ? '/session/reports/doctors' : '/session/reports';
+    if (this.router.url !== route) {
+      this.router.navigate([route]);
+    }
   }
 
   private mapFilters(): Record<string, string | number> {

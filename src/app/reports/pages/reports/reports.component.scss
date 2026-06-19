@@ -52,6 +52,19 @@
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
 
+.report-tabs {
+  background: #fff;
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tab-content {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
 .kpi {
   display: grid;
   gap: 0.3rem;
@@ -66,6 +79,10 @@
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.doctor-grid {
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
 }
 
 .panel {
