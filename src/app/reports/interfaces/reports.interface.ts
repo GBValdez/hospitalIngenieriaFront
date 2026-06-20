@@ -32,6 +32,7 @@ export interface ReportCountDto {
 
 export interface DoctorReportsDto {
   patientsAttendedByDoctor: ReportCountDto[];
+  patientAttendanceDetails: DoctorPatientAttendanceDetailDto[];
   appointmentsByDoctor: ReportCountDto[];
   finalizedAppointmentsByDoctor: ReportCountDto[];
   emergencyAppointmentsByDoctor: ReportCountDto[];
@@ -41,6 +42,16 @@ export interface DoctorReportsDto {
   dispatchedMedicinesByDoctor: ReportCountDto[];
   diagnosesByDoctor: ReportCountDto[];
   appointmentsBySpecialty: ReportCountDto[];
+}
+
+export interface DoctorPatientAttendanceDetailDto {
+  patientId: number;
+  patientName: string;
+  patientDpi: string;
+  appointmentCount: number;
+  doctorCount: number;
+  attendedByMultipleDoctors: boolean;
+  doctorNames: string[];
 }
 
 export interface LowStockMedicineDto {

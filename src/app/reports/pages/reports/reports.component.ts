@@ -17,6 +17,7 @@ import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import {
+  DoctorPatientAttendanceDetailDto,
   LowStockMedicineDto,
   ReportCountDto,
   ReportSummaryDto,
@@ -70,6 +71,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   error = '';
   isDoctorReport = false;
   lowStockColumns = ['medicineName', 'stock', 'price'];
+  patientAttendanceColumns = ['patientName', 'patientDpi', 'appointmentCount', 'doctorNames'];
+  maxDate = this.toDateInput(new Date());
   private chartInstances = new Map<HTMLCanvasElement, Chart>();
 
   constructor(
@@ -140,6 +143,14 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   trackMedicine(_: number, item: LowStockMedicineDto): number {
     return item.medicineId;
+  }
+
+  trackPatient(_: number, item: DoctorPatientAttendanceDetailDto): number {
+    return item.patientId;
+  }
+
+  doctorNames(item: DoctorPatientAttendanceDetailDto): string {
+    return item.doctorNames.join(', ');
   }
 
   chartItems(key: ChartKey): ReportCountDto[] {

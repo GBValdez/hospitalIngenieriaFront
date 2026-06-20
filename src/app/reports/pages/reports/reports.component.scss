@@ -77,6 +77,11 @@
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
 }
 
+.patient-detail-panel {
+  grid-column: 1 / -1;
+  overflow-x: auto;
+}
+
 .panel {
   display: grid;
   gap: 0.85rem;
@@ -112,6 +117,15 @@
 
 table {
   width: 100%;
+}
+
+.multiple-doctors-row {
+  background: #fee2e2;
+}
+
+.multiple-doctors-row td {
+  color: #991b1b;
+  font-weight: 600;
 }
 
 .error {
